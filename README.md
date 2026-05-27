@@ -112,3 +112,14 @@ Always use TanStack Query (`useQuery`, `useMutation`) wrapping native `fetch` in
    ```bash
    npx expo start
    ```
+## 🛠 Scaffolding a New Feature
+
+When creating a new feature (e.g., `rides`, `profile`, `auth`), follow these steps and maintain the strict folder structure. You can use the `src/features/example/` directory as a template.
+
+1. **Create the Folder:** Create `src/features/[feature-name]/`.
+2. **Scaffold Subdirectories:** Create `components`, `containers`, `hooks`, `services`, `queries`, `types`, and `data`.
+3. **Types & Services First:** Define your TypeScript interfaces in `/types/` and write your native `fetch` API calls in `/services/`.
+4. **TanStack Query:** Define your query keys in `/queries/` and write your custom `useQuery`/`useMutation` hooks in `/hooks/`.
+5. **Presentational UI:** Build your dumb UI components in `/components/` using React Native primitives (`View`, `Text`) and NativeWind. Zero fetching here!
+6. **Container:** Build your smart component in `/containers/` that calls your hooks and passes the data down to the presentational UI.
+7. **Routing Layer:** Finally, import your Container into a screen inside `src/app/` to display it to the user.
