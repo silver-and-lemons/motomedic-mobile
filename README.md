@@ -1,56 +1,114 @@
-# Welcome to your Expo app 👋
+# Motomedic Mobile - Architecture Guidelines
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Welcome to the Motomedic React Native (Expo) project.
 
-## Get started
+This project strictly adheres to a **Feature-Based Architecture** guided by Next.js structural principles, adapted for a mobile environment.
 
-1. Install dependencies
+## 🏗 Directory Structure
 
+All application code must live inside the `src/` directory.
+
+```text
+src/
+├── app/                        # Expo Router (Layouts & Screen bindings)
+├── components/
+│   ├── atoms/                  # Generic RN components (Button, Text) - Wraps react-native-reusables
+│   ├── molecules/              # Composed generic components
+│   ├── organisms/              # Complex UI (e.g., AppHeader, BottomNav)
+│   └── ui/                     # react-native-reusables (shadcn/ui equivalent)
+├── features/                   # Feature slices (Auth, Rides, Profile, etc.)
+│   └── [feature-name]/
+│       ├── components/         # Presentational only (UI)
+│       ├── containers/         # Logic & Data Fetching (Smart components)
+│       ├── hooks/              # TanStack Query hooks
+│       ├── services/           # Native fetch API calls
+│       ├── queries/            # Query keys
+│       ├── types/              # TS Types
+│       └── data/               # Mock data
+├── store/                      # Zustand global stores
+├── providers/                  # React Query Provider, Theme Provider, etc.
+├── lib/                        # Global utilities (utils.ts)
+├── config/                     # Constants, Theme configs
+├── styles/                     # global.css (NativeWind configuration)
+└── types/                      # Global TS types
+```
+
+## 🛠 Tech Stack
+
+| Concern | Tool |
+| --- | --- |
+| Framework | **Expo SDK 56 + React Native** |
+| Language | **TypeScript** (Strict) |
+| Routing | **Expo Router** (`src/app/`) |
+| Styling | **NativeWind** (Tailwind CSS for React Native) |
+| UI Components | **react-native-reusables** (shadcn/ui equivalent) |
+| Server Data Fetching | **TanStack Query** + **Native `fetch`** (No Axios) |
+| Client Global State | **Zustand** |
+| Testing | **Jest** (Unit) / **Detox or Maestro** (E2E) |
+
+---
+
+## 📐 Core Principles
+
+### 1. Atomic Design & Styling
+We use NativeWind to write Tailwind utility classes directly on React Native primitives (`View`, `Text`, `Pressable`, etc.).
+Never write raw `StyleSheet.create` unless absolutely necessary for complex animations.
+
+- **Atoms:** Wrap standard `react-native-reusables` or core NativeWind components.
+- **Molecules:** Compose 2-3 Atoms (e.g., Input + Button = SearchBar).
+- **Organisms:** Complex layouts that combine molecules (e.g., Header, Card).
+
+### 2. Container / Presentational Pattern
+Features are split strictly between logic (Containers) and UI (Presentational).
+
+**Presentational Components (`src/features/.../components/`)**
+These only accept props. They do *not* fetch data, read Zustand, or use side-effects.
+```tsx
+import { View, Text, FlatList } from 'react-native';
+
+export default function RideList({ rides }) {
+  return (
+    <FlatList 
+      data={rides}
+      renderItem={({ item }) => (
+        <View className="p-4 bg-white rounded-lg shadow-sm">
+          <Text className="text-lg font-bold">{item.destination}</Text>
+        </View>
+      )}
+    />
+  );
+}
+```
+
+**Containers (`src/features/.../containers/`)**
+These fetch data using TanStack Query, read global state, and pass data down.
+```tsx
+import RideList from '../components/RideList';
+import { useRides } from '../hooks/use-rides';
+
+export default function RideListContainer() {
+  const { data: rides, isLoading } = useRides();
+
+  if (isLoading) return <Text>Loading...</Text>;
+  return <RideList rides={rides ?? []} />;
+}
+```
+
+### 3. Routing Layer (`src/app/`)
+The `app/` directory serves *only* as a routing layer. Screens should remain extremely thin, merely importing and rendering **Containers** or **Organisms**.
+
+### 4. Data Fetching
+Always use TanStack Query (`useQuery`, `useMutation`) wrapping native `fetch` inside the `/services/` folder. Do not use raw `useEffect` + `fetch` inside components.
+
+---
+
+## 🚀 Getting Started
+
+1. Install dependencies:
    ```bash
    npm install
    ```
-
-2. Start the app
-
+2. Start the Expo development server:
    ```bash
    npx expo start
    ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
