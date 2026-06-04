@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { useFormContext, Controller } from 'react-hook-form';
+import { useFormContext, useWatch, Controller } from 'react-hook-form';
 import { Input } from '../../../components/atoms/Input';
 import { Card } from '../../../components/atoms/Card';
 import { ENGINE_TYPES } from '../types/motorcycle-profile';
@@ -17,8 +17,8 @@ const ENGINE_LABELS: Record<string, string> = {
 };
 
 export default function EngineStep() {
-  const { control, watch, formState: { errors } } = useFormContext<MotorcycleProfile>();
-  const selectedEngineType = watch('engineType');
+  const { control, formState: { errors } } = useFormContext<MotorcycleProfile>();
+  const selectedEngineType = useWatch({ control, name: 'engineType' });
 
   return (
     <View className="gap-5">

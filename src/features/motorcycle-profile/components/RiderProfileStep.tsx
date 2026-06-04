@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { useFormContext, Controller } from 'react-hook-form';
+import { useFormContext, useWatch, Controller } from 'react-hook-form';
 import { Card } from '../../../components/atoms/Card';
 import { PRIMARY_USES, EXPERIENCE_LEVELS } from '../types/motorcycle-profile';
 import type { MotorcycleProfile } from '../types/motorcycle-profile';
@@ -30,9 +30,9 @@ const USE_SUBTITLES: Record<string, string> = {
 };
 
 export default function RiderProfileStep() {
-  const { control, watch } = useFormContext<MotorcycleProfile>();
-  const selectedUse = watch('primaryUse');
-  const selectedExp = watch('experienceLevel');
+  const { control } = useFormContext<MotorcycleProfile>();
+  const selectedUse = useWatch({ control, name: 'primaryUse' });
+  const selectedExp = useWatch({ control, name: 'experienceLevel' });
 
   return (
     <View className="gap-6">
