@@ -1,77 +1,63 @@
 import { z } from 'zod';
 
-export const ENGINE_TYPES = [
-  'single-cylinder',
-  'parallel-twin',
-  'v-twin',
-  'inline-three',
-  'inline-four',
-  'inline-six',
-  'electric',
-  'other',
+export const VEHICLE_TYPES = [
+  'automatic-scooter',
+  'underbone',
+  'sport-naked-big-bike',
 ] as const;
 
-export const PRIMARY_USES = [
-  'commuting',
-  'touring',
-  'track',
-  'offroad',
-  'cruising',
-  'other',
-] as const;
+export const FUEL_TYPES = ['carbureted', 'fuel-injected'] as const;
 
-export const EXPERIENCE_LEVELS = [
-  'beginner',
-  'intermediate',
-  'advanced',
-  'expert',
-] as const;
+export const COOLING_TYPES = ['air-cooled', 'liquid-cooled'] as const;
 
-export const CUSTOM_FEATURES_OPTIONS = [
-  'aftermarket-exhaust',
-  'power-commander',
-  'aftermarket-suspension',
-  'led-lighting',
-  'custom-seat',
-  'luggage-system',
-  'windshield-upgrade',
-  'crash-guards',
-  'aftermarket-brakes',
-] as const;
+export const VEHICLE_TYPE_LABELS: Record<string, string> = {
+  'automatic-scooter': 'Automatic Scooter',
+  'underbone': 'Underbone',
+  'sport-naked-big-bike': 'Sport / Naked / Big Bike',
+};
 
-export type EngineType = (typeof ENGINE_TYPES)[number];
-export type PrimaryUse = (typeof PRIMARY_USES)[number];
-export type ExperienceLevel = (typeof EXPERIENCE_LEVELS)[number];
-export type CustomFeature = (typeof CUSTOM_FEATURES_OPTIONS)[number];
+export const VEHICLE_TYPE_SUBTITLES: Record<string, string> = {
+  'automatic-scooter': 'Easy handling, city-friendly',
+  'underbone': 'Lightweight, fuel-efficient',
+  'sport-naked-big-bike': 'High performance, powerful',
+};
+
+export const FUEL_TYPE_LABELS: Record<string, string> = {
+  'carbureted': 'Carbureted',
+  'fuel-injected': 'Fuel Injected',
+};
+
+export const COOLING_TYPE_LABELS: Record<string, string> = {
+  'air-cooled': 'Air Cooled',
+  'liquid-cooled': 'Liquid Cooled',
+};
+
+export type VehicleType = (typeof VEHICLE_TYPES)[number];
+export type FuelType = (typeof FUEL_TYPES)[number];
+export type CoolingType = (typeof COOLING_TYPES)[number];
 
 export const motorcycleProfileSchema = z.object({
-  make: z.string().min(1, 'Make is required').max(50),
-  model: z.string().min(1, 'Model is required').max(50),
-  year: z
-    .number({ message: 'Year is required' })
-    .int('Year must be a whole number')
-    .min(1970, 'Year must be 1970 or later')
-    .max(new Date().getFullYear() + 1, 'Year cannot be in the distant future'),
-  engineType: z.enum(ENGINE_TYPES, { message: 'Engine type is required' }),
-  displacementCc: z
-    .number({ message: 'Displacement is required' })
-    .int('Displacement must be a whole number')
-    .min(50, 'Displacement must be at least 50cc')
-    .max(2500, 'Displacement must be at most 2500cc'),
-  customFeatures: z.array(z.string()),
-  primaryUse: z.enum(PRIMARY_USES, { message: 'Primary use is required' }),
-  experienceLevel: z.enum(EXPERIENCE_LEVELS, { message: 'Experience level is required' }),
+  vehicleType: z.enum(VEHICLE_TYPES, { message: 'Vehicle type is required' }),
+  engineSizeCc: z
+    .number({ message: 'Engine size is required' })
+    .int()
+    .min(50, 'Must be at least 50cc')
+    .max(2500, 'Must be at most 2500cc'),
+  fuelType: z.enum(FUEL_TYPES, { message: 'Fuel type is required' }),
+  coolingType: z.enum(COOLING_TYPES, { message: 'Cooling type is required' }),
+  bikeAge: z.string().min(1, 'Bike age is required'),
+  agreedToPolicies: z.boolean().refine((val) => val === true, {
+    message: 'You must agree to the policies',
+  }),
 });
 
 export type MotorcycleProfile = z.infer<typeof motorcycleProfileSchema>;
 
 export const questionnaireDefaultValues: MotorcycleProfile = {
-  make: '',
-  model: '',
-  year: new Date().getFullYear(),
-  engineType: 'inline-four',
-  displacementCc: 600,
-  customFeatures: [],
-  primaryUse: 'commuting',
-  experienceLevel: 'intermediate',
+  vehicleType: 'automatic-scooter',
+  engineSizeCc: 110,
+  fuelType: 'carbureted',
+  coolingType: 'air-cooled',
+  bikeAge: '',
+  agreedToPolicies: false,
 };

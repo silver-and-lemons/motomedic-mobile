@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Pressable, Text, type PressableProps, type ViewStyle } from 'react-native';
+import { Pressable, Text, type PressableProps } from 'react-native';
 import { cn } from '../../lib/utils';
 
 const buttonVariants = cva(
@@ -8,8 +8,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-blue-600',
+        primary: 'bg-[#0ea5e9]',
         secondary: 'bg-slate-200',
-        outline: 'border border-slate-300 bg-transparent',
+        outline: 'border border-slate-600 bg-transparent',
+        'outline-light': 'border border-slate-300 bg-transparent',
         ghost: 'bg-transparent',
         destructive: 'bg-red-600',
       },
@@ -31,9 +33,11 @@ const textVariants = cva('font-semibold', {
   variants: {
     variant: {
       default: 'text-white',
+      primary: 'text-white',
       secondary: 'text-slate-900',
-      outline: 'text-slate-900',
-      ghost: 'text-slate-900',
+      outline: 'text-white',
+      'outline-light': 'text-slate-900',
+      ghost: 'text-white',
       destructive: 'text-white',
     },
     size: {

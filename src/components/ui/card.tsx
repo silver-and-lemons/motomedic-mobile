@@ -1,4 +1,4 @@
-import { Pressable, Text, type PressableProps, type ViewStyle } from 'react-native';
+import { Pressable, Text, type PressableProps } from 'react-native';
 import { cn } from '../../lib/utils';
 
 export type CardProps = PressableProps & {
@@ -6,6 +6,7 @@ export type CardProps = PressableProps & {
   title: string;
   subtitle?: string;
   className?: string;
+  selectedClassName?: string;
 };
 
 export function Card({
@@ -13,6 +14,7 @@ export function Card({
   title,
   subtitle,
   className,
+  selectedClassName,
   ...props
 }: CardProps) {
   return (
@@ -20,8 +22,9 @@ export function Card({
       className={cn(
         'rounded-xl border-2 p-4',
         selected
-          ? 'border-blue-600 bg-blue-50'
-          : 'border-slate-200 bg-white',
+          ? 'border-[#0ea5e9] bg-[#1b232c]'
+          : 'border-slate-700 bg-[#1b232c]',
+        selected && selectedClassName,
         className
       )}
       {...props}
@@ -29,7 +32,7 @@ export function Card({
       <Text
         className={cn(
           'text-base font-semibold',
-          selected ? 'text-blue-700' : 'text-slate-900'
+          selected ? 'text-white' : 'text-white'
         )}
       >
         {title}
@@ -38,7 +41,7 @@ export function Card({
         <Text
           className={cn(
             'mt-1 text-sm',
-            selected ? 'text-blue-600' : 'text-slate-500'
+            selected ? 'text-[#94a3b8]' : 'text-[#94a3b8]'
           )}
         >
           {subtitle}
