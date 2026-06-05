@@ -45,7 +45,11 @@ export const motorcycleProfileSchema = z.object({
     .max(2500, 'Must be at most 2500cc'),
   fuelType: z.enum(FUEL_TYPES, { message: 'Fuel type is required' }),
   coolingType: z.enum(COOLING_TYPES, { message: 'Cooling type is required' }),
-  bikeAge: z.string().min(1, 'Bike age is required'),
+  bikeAge: z
+    .number({ message: 'Year is required' })
+    .int('Year must be a whole number')
+    .min(1900, 'Year must be 1900 or later')
+    .max(new Date().getFullYear(), `Year cannot exceed ${new Date().getFullYear()}`),
   agreedToPolicies: z.boolean().refine((val) => val === true, {
     message: 'You must agree to the policies',
   }),
@@ -58,6 +62,6 @@ export const questionnaireDefaultValues: MotorcycleProfile = {
   engineSizeCc: 110,
   fuelType: 'carbureted',
   coolingType: 'air-cooled',
-  bikeAge: '',
+  bikeAge: new Date().getFullYear(),
   agreedToPolicies: false,
 };
