@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
@@ -18,6 +18,7 @@ import {
 } from '../types/motorcycle-profile';
 import type { MotorcycleProfile } from '../types/motorcycle-profile';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
+import { useGenerateChecklist } from '../hooks/use-checklist';
 
 const STEPS = [
   { key: 'vehicle-type', title: 'Vehicle Type', component: VehicleTypeStep },
@@ -32,6 +33,7 @@ export default function QuestionnaireContainer() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const saveProfile = useMotorcycleProfileStore((s) => s.saveProfile);
+  const mutation = useGenerateChecklist();
 
   const form = useForm<MotorcycleProfile>({
     resolver: zodResolver(motorcycleProfileSchema),
@@ -74,8 +76,19 @@ export default function QuestionnaireContainer() {
     if (!isValid) return;
     const profile = form.getValues();
     saveProfile(profile);
-    router.back();
-  }, [form, saveProfile]);
+    mutation.mutate(profile, {
+      onSuccess: () => {
+        router.back();
+      },
+      onError: () => {
+        Alert.alert(
+          'Connection Error',
+          'Checklist could not be generated. Your profile was saved locally.',
+        );
+        router.back();
+      },
+    });
+  }, [form, saveProfile, mutation]);
 
   const StepComponent = STEPS[currentStep].component;
   const isLastStep = currentStep === STEPS.length - 1;
@@ -146,8 +159,9 @@ export default function QuestionnaireContainer() {
                     variant="primary"
                     className="w-full rounded-full py-4"
                     onPress={handleConfirm}
+                    disabled={mutation.isPending}
                   >
-                    CONFIRM
+                    {mutation.isPending ? 'SUBMITTING...' : 'CONFIRM'}
                   </Button>
                   <Pressable onPress={goBack} className="items-center active:opacity-60">
                     <Text className="text-sm font-medium text-[#94a3b8]">{'< GO BACK'}</Text>
