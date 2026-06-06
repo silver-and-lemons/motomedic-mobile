@@ -19,7 +19,7 @@ features/motorcycle-profile/
   hooks/
     use-checklist.ts           — TanStack Query mutation hook
   services/
-    checklist.service.ts       — Native fetch to POST /api/checklist/generate
+    checklist.service.ts       — Native fetch to POST /api/v1/checklist/generate
     mapper.ts                  — Frontend schema → API schema converter
   queries/
     checklist.queries.ts       — Query key factory
@@ -41,7 +41,7 @@ Questionnaire (React Hook Form + Zod)
   │           │
   │           ├── mapper.ts ──► MotorcycleProfile → MotorcycleQuestionnaire
   │           │
-  │           ├── checklist.service.ts ──► POST /api/checklist/generate
+  │           ├── checklist.service.ts ──► POST /api/v1/checklist/generate
   │           │
   │           ├── onSuccess: saveChecklist(result) ──► AsyncStorage
   │           │
@@ -82,14 +82,14 @@ The frontend collects user-friendly numeric values; the API expects discrete enu
 
 ## API Endpoint
 
-### `POST /api/checklist/generate`
+### `POST /api/v1/checklist/generate`
 
 - **Body:** `MotorcycleQuestionnaire` (after mapper conversion)
 - **Response:** `ChecklistResult` with profile echo + checklist items array + `generatedAt` timestamp
 - **Status 201:** Success
 - **Status 400:** Invalid body
 
-The `POST /api/checklist/evaluate` endpoint exists on the API but is **not yet integrated** in this feature.
+The `POST /api/v1/checklist/evaluate` endpoint exists on the API but is **not yet integrated** in this feature.
 
 API base URL is configured via `EXPO_PUBLIC_API_URL` in `.env` (defaults to `http://localhost:3000`).
 

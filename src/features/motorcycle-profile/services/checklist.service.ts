@@ -4,7 +4,7 @@ import type { MotorcycleQuestionnaire, ChecklistResult } from '../../../types/ap
 export async function generateChecklist(
   data: MotorcycleQuestionnaire
 ): Promise<ChecklistResult> {
-  const res = await fetch(`${API_BASE_URL}/api/checklist/generate`, {
+  const res = await fetch(`${API_BASE_URL}/api/v1/checklist/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
