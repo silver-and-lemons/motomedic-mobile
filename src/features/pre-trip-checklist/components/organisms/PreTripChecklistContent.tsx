@@ -6,6 +6,7 @@ import ChecklistSection from './ChecklistSection';
 import ChecklistSurface from '../atoms/ChecklistSurface';
 import ChecklistText from '../atoms/ChecklistText';
 import type {
+  PreTripChecklistMode,
   PreTripChecklistSection as PreTripChecklistSectionType,
   PreTripChecklistStats,
 } from '../../types/pre-trip-checklist';
@@ -13,7 +14,7 @@ import type {
 type PreTripChecklistContentProps = {
   sections: PreTripChecklistSectionType[];
   checkedItemIds: Set<string>;
-  diagnosticConfirmed: boolean;
+  mode: PreTripChecklistMode;
   canProceedToDiagnostic: boolean;
   stats: PreTripChecklistStats;
   isLoading: boolean;
@@ -26,7 +27,7 @@ type PreTripChecklistContentProps = {
 export default function PreTripChecklistContent({
   sections,
   checkedItemIds,
-  diagnosticConfirmed,
+  mode,
   canProceedToDiagnostic,
   stats,
   isLoading,
@@ -35,6 +36,8 @@ export default function PreTripChecklistContent({
   onRunDiagnostic,
   onToggleItem,
 }: PreTripChecklistContentProps) {
+  const isStatusMode = mode === 'status';
+
   if (isLoading) {
     return (
       <ChecklistSurface className="gap-3">
@@ -60,7 +63,7 @@ export default function PreTripChecklistContent({
         <ChecklistText className="flex-1 text-xs font-semibold">
           Bike checklist
         </ChecklistText>
-        <ChecklistIconButton icon={MoreHorizontal} onPress={onRunDiagnostic} accessibilityLabel="Checklist options" />
+        <ChecklistIconButton icon={MoreHorizontal} accessibilityLabel="Checklist options" />
       </ChecklistSurface>
 
       <ChecklistHeaderCard stats={stats} />
@@ -70,26 +73,27 @@ export default function PreTripChecklistContent({
           key={section.id}
           section={section}
           checkedItemIds={checkedItemIds}
-          diagnosticConfirmed={diagnosticConfirmed}
+          mode={mode}
           onToggleItem={onToggleItem}
         />
       ))}
 
-      {!diagnosticConfirmed && !canProceedToDiagnostic && (
+      {!isStatusMode && !canProceedToDiagnostic && (
         <ChecklistText tone="muted" className="text-center text-xs">
-          Check all boxes before proceeding.
+          Check all non-optional boxes before proceeding.
         </ChecklistText>
       )}
 
-      <Button
-        variant="primary"
-        className="mt-2 h-14 rounded-md bg-[#21f4b7]"
-        textClassName="text-xs font-black text-[#061314]"
-        onPress={onRunDiagnostic}
-        disabled={!diagnosticConfirmed && !canProceedToDiagnostic}
-      >
-        {diagnosticConfirmed ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
-      </Button>
+      {(isStatusMode || canProceedToDiagnostic) && (
+        <Button
+          variant="primary"
+          className="mt-2 h-14 rounded-md bg-[#21f4b7]"
+          textClassName="text-xs font-black text-[#061314]"
+          onPress={onRunDiagnostic}
+        >
+          {isStatusMode ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
+        </Button>
+      )}
     </>
   );
 }

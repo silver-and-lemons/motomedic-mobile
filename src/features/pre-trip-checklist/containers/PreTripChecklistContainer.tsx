@@ -1,19 +1,33 @@
 import { useMemo } from 'react';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import PreTripChecklist from '../components/PreTripChecklist';
 import { usePreTripChecklist } from '../hooks/use-pre-trip-checklist';
-import type { PreTripChecklistSection } from '../types/pre-trip-checklist';
+import type {
+  PreTripChecklistMode,
+  PreTripChecklistSection,
+} from '../types/pre-trip-checklist';
 import { usePreTripChecklistStore } from '../../../store/pre-trip-checklist.store';
+import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
 
-export default function PreTripChecklistContainer() {
-  const { data: sections, isLoading, error } = usePreTripChecklist();
+type PreTripChecklistContainerProps = {
+  mode: PreTripChecklistMode;
+};
+
+const CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
+const CHECKLIST_STATUS_ROUTE = '/pre-trip-checklist-status' as Href;
+
+export default function PreTripChecklistContainer({
+  mode,
+}: PreTripChecklistContainerProps) {
+  const { data, isLoading, error } = usePreTripChecklist();
+  const profile = useMotorcycleProfileStore((state) => state.profile);
   const checkedItemIds = usePreTripChecklistStore((state) => state.checkedItemIds);
-  const diagnosticConfirmed = usePreTripChecklistStore((state) => state.diagnosticConfirmed);
   const toggleItem = usePreTripChecklistStore((state) => state.toggleItem);
-  const setDiagnosticConfirmed = usePreTripChecklistStore(
-    (state) => state.setDiagnosticConfirmed
-  );
   const setCheckedItemIds = usePreTripChecklistStore((state) => state.setCheckedItemIds);
+  const sections = useMemo(
+    () => filterRelevantSections(data, profile),
+    [data, profile]
+  );
   const requiredItemIds = sections
     .flatMap((section) => section.items)
     .filter((item) => item.priority === 'required')
@@ -45,17 +59,22 @@ export default function PreTripChecklistContainer() {
   }
 
   function handleRunDiagnostic(): void {
-    setDiagnosticConfirmed(true);
+    if (mode === 'status') {
+      router.replace(CHECKLIST_ROUTE);
+      return;
+    }
+
     if (checkedItemIds.length === 0) {
       setCheckedItemIds(getDefaultCheckedItemIds(sections));
     }
+    router.push(CHECKLIST_STATUS_ROUTE);
   }
 
   return (
     <PreTripChecklist
       sections={sections}
       checkedItemIds={checkedItemIdSet}
-      diagnosticConfirmed={diagnosticConfirmed}
+      mode={mode}
       canProceedToDiagnostic={canProceedToDiagnostic}
       stats={stats}
       isLoading={isLoading}
@@ -74,4 +93,40 @@ function getDefaultCheckedItemIds(sections: PreTripChecklistSection[]): string[]
       .filter((item) => item.completed)
       .map((item) => item.id)
   );
+}
+
+function filterRelevantSections(
+  sections: PreTripChecklistSection[],
+  profile: ReturnType<typeof useMotorcycleProfileStore.getState>['profile']
+): PreTripChecklistSection[] {
+  if (!profile) {
+    return sections;
+  }
+
+  return sections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        switch (item.id) {
+          case 'chain-tension-lubrication':
+          case 'sprocket-condition':
+            return profile.vehicleType !== 'automatic-scooter';
+          case 'choke-warm-up':
+            return profile.fuelType === 'carbureted';
+          case 'fi-warning-light':
+            return profile.fuelType === 'fuel-injected';
+          case 'coolant-level':
+            return profile.coolingType === 'liquid-cooled';
+          case 'battery-electricals':
+            return profile.bikeAge <= 2014;
+          case 'brake-fluid-level':
+            return profile.engineSizeCc >= 156;
+          case 'abs-self-check':
+            return profile.engineSizeCc >= 156 && profile.fuelType === 'fuel-injected';
+          default:
+            return true;
+        }
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
 }

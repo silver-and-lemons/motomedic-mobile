@@ -21,6 +21,8 @@ export type PreTripChecklistSection = {
   items: PreTripChecklistItem[];
 };
 
+export type PreTripChecklistMode = 'checklist' | 'status';
+
 export type PreTripChecklistStats = {
   completedCount: number;
   totalCount: number;

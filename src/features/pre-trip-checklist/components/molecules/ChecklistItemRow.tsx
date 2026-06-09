@@ -2,12 +2,15 @@ import ChecklistSurface from '../atoms/ChecklistSurface';
 import ChecklistCompletionBox from '../atoms/ChecklistCompletionBox';
 import ChecklistStatusMark from '../atoms/ChecklistStatusMark';
 import ChecklistText from '../atoms/ChecklistText';
-import type { PreTripChecklistItem } from '../../types/pre-trip-checklist';
+import type {
+  PreTripChecklistItem,
+  PreTripChecklistMode,
+} from '../../types/pre-trip-checklist';
 
 type ChecklistItemRowProps = {
   item: PreTripChecklistItem;
   checked: boolean;
-  diagnosticConfirmed: boolean;
+  mode: PreTripChecklistMode;
   variant?: 'status' | 'line';
   onToggle: (itemId: string) => void;
 };
@@ -15,19 +18,21 @@ type ChecklistItemRowProps = {
 export default function ChecklistItemRow({
   item,
   checked,
-  diagnosticConfirmed,
+  mode,
   variant = 'status',
   onToggle,
 }: ChecklistItemRowProps) {
+  const isStatusMode = mode === 'status';
+
   return (
     <ChecklistSurface
-      interactive={!diagnosticConfirmed}
+      interactive={!isStatusMode}
       accessibilityRole="checkbox"
       accessibilityState={{ checked }}
-      onPress={diagnosticConfirmed ? undefined : () => onToggle(item.id)}
+      onPress={isStatusMode ? undefined : () => onToggle(item.id)}
       className="min-h-[78px] flex-row items-center gap-4 rounded-none border-0 border-b border-[#2a3a42] bg-transparent px-5 py-4"
     >
-      {diagnosticConfirmed && (
+      {isStatusMode && (
         <ChecklistSurface className="w-8 items-center border-0 bg-transparent p-0">
           <ChecklistStatusMark
             checked={checked}
@@ -45,7 +50,7 @@ export default function ChecklistItemRow({
           {item.description}
         </ChecklistText>
       </ChecklistSurface>
-      {!diagnosticConfirmed && <ChecklistCompletionBox checked={checked} />}
+      {!isStatusMode && <ChecklistCompletionBox checked={checked} />}
     </ChecklistSurface>
   );
 }

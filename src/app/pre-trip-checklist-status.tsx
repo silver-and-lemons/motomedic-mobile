@@ -1,5 +1,5 @@
 import PreTripChecklistContainer from '../features/pre-trip-checklist/containers/PreTripChecklistContainer';
 
-export default function PreTripChecklistScreen() {
-  return <PreTripChecklistContainer mode="checklist" />;
+export default function PreTripChecklistStatusScreen() {
+  return <PreTripChecklistContainer mode="status" />;
 }

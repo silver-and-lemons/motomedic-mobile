@@ -1,6 +1,7 @@
 import { ScrollView } from 'react-native';
 import PreTripChecklistContent from './organisms/PreTripChecklistContent';
 import type {
+  PreTripChecklistMode,
   PreTripChecklistSection,
   PreTripChecklistStats,
 } from '../types/pre-trip-checklist';
@@ -8,7 +9,7 @@ import type {
 type PreTripChecklistProps = {
   sections: PreTripChecklistSection[];
   checkedItemIds: Set<string>;
-  diagnosticConfirmed: boolean;
+  mode: PreTripChecklistMode;
   canProceedToDiagnostic: boolean;
   stats: PreTripChecklistStats;
   isLoading: boolean;
@@ -21,7 +22,7 @@ type PreTripChecklistProps = {
 export default function PreTripChecklist({
   sections,
   checkedItemIds,
-  diagnosticConfirmed,
+  mode,
   canProceedToDiagnostic,
   stats,
   isLoading,
@@ -40,7 +41,7 @@ export default function PreTripChecklist({
       <PreTripChecklistContent
         sections={sections}
         checkedItemIds={checkedItemIds}
-        diagnosticConfirmed={diagnosticConfirmed}
+        mode={mode}
         canProceedToDiagnostic={canProceedToDiagnostic}
         stats={stats}
         isLoading={isLoading}

@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react-native';
 type ChecklistIconButtonProps = {
   icon: LucideIcon;
   accessibilityLabel: string;
-  onPress: () => void;
+  onPress?: () => void;
 };
 
 export default function ChecklistIconButton({
@@ -16,7 +16,8 @@ export default function ChecklistIconButton({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+      className="h-10 w-10 items-center justify-center rounded-full active:opacity-80 disabled:opacity-100"
+      disabled={!onPress}
       onPress={onPress}
     >
       <Icon size={22} color="#94a3b8" />
