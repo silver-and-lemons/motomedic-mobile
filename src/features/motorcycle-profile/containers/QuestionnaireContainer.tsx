@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { ArrowLeft, Ellipsis } from 'lucide-react-native';
 import { Button } from '../../../components/atoms/Button';
 import VehicleTypeStep from '../components/VehicleTypeStep';
@@ -28,6 +28,8 @@ const STEPS = [
   { key: 'bike-age', title: 'Bike Age', component: BikeAgeStep },
   { key: 'policies', title: 'Policies', component: PoliciesAgreementStep },
 ] as const;
+
+const PRE_TRIP_CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
 
 export default function QuestionnaireContainer() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -78,14 +80,14 @@ export default function QuestionnaireContainer() {
     saveProfile(profile);
     mutation.mutate(profile, {
       onSuccess: () => {
-        router.back();
+        router.replace(PRE_TRIP_CHECKLIST_ROUTE);
       },
       onError: () => {
         Alert.alert(
           'Connection Error',
           'Checklist could not be generated. Your profile was saved locally.',
         );
-        router.back();
+        router.replace(PRE_TRIP_CHECKLIST_ROUTE);
       },
     });
   }, [form, saveProfile, mutation]);

@@ -4,12 +4,10 @@ import { Button } from '../../../components/atoms/Button';
 
 type LandingScreenProps = {
   onStartQuestionnaire: () => void;
-  onOpenPreTripChecklist: () => void;
 };
 
 export default function LandingScreen({
   onStartQuestionnaire,
-  onOpenPreTripChecklist,
 }: LandingScreenProps) {
   return (
     <View className="flex-1 items-center justify-center bg-[#11161a] gap-6 px-6">
@@ -28,13 +26,6 @@ export default function LandingScreen({
         <Button
           variant="primary"
           className="w-full rounded-full py-4"
-          onPress={onOpenPreTripChecklist}
-        >
-          Open Pre-trip Checklist
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full rounded-full py-4"
           onPress={onStartQuestionnaire}
         >
           Start Questionnaire
@@ -44,7 +35,7 @@ export default function LandingScreen({
       <View className="flex-row items-center gap-2">
         <ClipboardCheck size={16} color="#10b981" />
         <Text className="text-sm text-[#94a3b8]">
-          Quick safety flow ready before every ride
+          Build your bike profile, then review the pre-trip checklist
         </Text>
       </View>
     </View>
