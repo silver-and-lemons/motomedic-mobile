@@ -91,7 +91,7 @@ export default function PreTripChecklistContent({
           textClassName="text-xs font-black text-[#061314]"
           onPress={onRunDiagnostic}
         >
-          {isStatusMode ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
+          {isStatusMode ? 'GO TO DASHBOARD' : 'RUN SELF DIAGNOSTIC'}
         </Button>
       )}
     </>
