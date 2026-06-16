@@ -66,12 +66,14 @@ export default function BikeHealthSection({
           className="flex-1"
         >
           <View className="flex-row items-baseline gap-2">
-            <Text className="text-3xl font-bold text-white">
-              {telemetry.tirePressure.frontPsi}
-              <Text className="text-lg text-muted">/</Text>
-              {telemetry.tirePressure.rearPsi}
-            </Text>
-            <View className="h-2 w-2 rounded-full bg-mint" />
+            <View className="relative">
+              <Text className="text-3xl font-bold text-white">
+                {telemetry.tirePressure.frontPsi}
+                <Text className="text-lg text-muted">/</Text>
+                {telemetry.tirePressure.rearPsi}
+              </Text>
+              <View className="absolute -right-1.5 -top-0.5 h-2 w-2 rounded-full bg-mint" />
+            </View>
           </View>
           <View className="mt-2 flex-row items-center">
             <Text className="text-xs text-muted">Front/Rear</Text>

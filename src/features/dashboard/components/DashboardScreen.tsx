@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import HeaderSection from './HeaderSection';
 import BikeHealthSection from './BikeHealthSection';
 import MaintenanceBanner from './MaintenanceBanner';
+import BookingSection from './BookingSection';
 import QuickAccessGrid from './QuickAccessGrid';
 import NavigationBar from './NavigationBar';
 import type { RiderProfile } from '../../../types/rider';
@@ -9,6 +10,7 @@ import type {
   DashboardData,
   MaintenanceBannerData,
   RecentActivityItem,
+  BookingData,
 } from '../types/dashboard';
 import { Wrench, ChevronRight } from 'lucide-react-native';
 
@@ -16,9 +18,11 @@ type DashboardScreenProps = {
   rider: RiderProfile | null;
   dashboard: DashboardData | null;
   maintenanceBanner: MaintenanceBannerData;
+  booking: BookingData | null;
   isLoading: boolean;
   error?: string;
-  onStartCheck: () => void;
+  onBannerAction: () => void;
+  onBookService: () => void;
   onNotificationPress?: () => void;
   onChangeVehicle?: () => void;
   onQuickAccessPress?: (route: string) => void;
@@ -29,9 +33,11 @@ export default function DashboardScreen({
   rider,
   dashboard,
   maintenanceBanner,
+  booking,
   isLoading,
   error,
-  onStartCheck,
+  onBannerAction,
+  onBookService,
   onNotificationPress,
   onChangeVehicle,
   onActivityPress,
@@ -81,8 +87,14 @@ export default function DashboardScreen({
         </View>
 
         <View className="mt-5">
-          <MaintenanceBanner data={maintenanceBanner} onAction={onStartCheck} />
+          <MaintenanceBanner data={maintenanceBanner} onAction={onBannerAction} />
         </View>
+
+        {booking && (
+          <View className="mt-5">
+            <BookingSection booking={booking} onBookService={onBookService} />
+          </View>
+        )}
 
         <View className="mt-6">
           <QuickAccessGrid links={dashboard?.quickAccessLinks ?? []} />
@@ -143,5 +155,3 @@ function RecentActivityRow({
     </Pressable>
   );
 }
-
-

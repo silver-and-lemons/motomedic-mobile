@@ -39,7 +39,7 @@ export default function HeaderSection({
         </Pressable>
       </View>
 
-      <View className="mt-6">
+      <View className="mt-6 border-t border-surface-light pt-4 pb-4 border-b border-surface-light">
         <Text className="text-2xl font-bold text-white">
           {rider?.bikeName ?? 'My Motorcycle'}
         </Text>

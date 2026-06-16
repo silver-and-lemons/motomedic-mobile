@@ -16,6 +16,12 @@ export const MOCK_RIDER_PROFILE: RiderProfile = {
   bikePlateNumber: 'ABC 1234',
 };
 
+export const MOCK_BOOKING: DashboardData['booking'] = {
+  deadlineDays: 15,
+  deadlineMiles: 450,
+  bikeName: 'Yamaha MT-07',
+};
+
 export const MOCK_DASHBOARD_DATA: DashboardData = {
   telemetry: {
     oilLife: {
@@ -37,6 +43,7 @@ export const MOCK_DASHBOARD_DATA: DashboardData = {
     subtitle: '1 day 16 hrs ago',
     buttonLabel: "START TODAY'S CHECK",
   },
+  booking: MOCK_BOOKING,
   quickAccessLinks: [
     { id: 'garage', label: 'MY GARAGE', icon: Car, route: '/garage' },
     { id: 'history', label: 'HISTORY', icon: History, route: '/history' },

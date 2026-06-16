@@ -7,9 +7,12 @@ import {
 } from '../services/dashboard.service';
 import { MOCK_DASHBOARD_DATA, MOCK_RIDER_PROFILE } from '../data/dashboard.mock';
 import { buildMonitorBanner } from '../data/dashboard.mock';
-import type { DashboardData } from '../types/dashboard';
+import type {
+  DashboardData,
+  MaintenanceBannerData,
+  BookingData,
+} from '../types/dashboard';
 import type { RiderProfile } from '../../../types/rider';
-import type { MaintenanceBannerData } from '../types/dashboard';
 import { usePreTripChecklistStore } from '../../../store/pre-trip-checklist.store';
 
 export function useRiderProfile() {
@@ -50,18 +53,29 @@ export function useMaintenanceBanner(): {
   };
 }
 
+export function useBooking(): {
+  booking: BookingData | null;
+} {
+  const { data: dashboard } = useDashboardData();
+  return {
+    booking: dashboard?.booking ?? null,
+  };
+}
+
 export function useDashboard(): {
   rider: RiderProfile | undefined;
   riderLoading: boolean;
   dashboard: DashboardData | undefined;
   dashboardLoading: boolean;
   maintenanceBanner: MaintenanceBannerData;
+  booking: BookingData | null;
   bannerLoading: boolean;
   error?: string;
 } {
   const { data: rider, isLoading: riderLoading } = useRiderProfile();
   const { data: dashboard, isLoading: dashboardLoading } = useDashboardData();
   const { banner, isLoading: bannerLoading, error } = useMaintenanceBanner();
+  const { booking } = useBooking();
 
   return {
     rider,
@@ -69,6 +83,7 @@ export function useDashboard(): {
     dashboard,
     dashboardLoading,
     maintenanceBanner: banner,
+    booking,
     bannerLoading,
     error,
   };

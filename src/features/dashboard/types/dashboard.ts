@@ -33,6 +33,7 @@ export type MaintenanceBannerData = {
   deadlineMiles?: number;
   lastCheckedAgo?: string;
   lastCheckedDate?: string;
+  bikeName?: string;
 };
 
 export type RecentActivityItem = {
@@ -49,9 +50,16 @@ export type QuickAccessLink = {
   route: string;
 };
 
+export type BookingData = {
+  deadlineDays: number;
+  deadlineMiles: number;
+  bikeName: string;
+};
+
 export type DashboardData = {
   telemetry: TelemetryData;
   maintenanceBanner: MaintenanceBannerData;
+  booking: BookingData | null;
   quickAccessLinks: QuickAccessLink[];
   recentActivities: RecentActivityItem[];
 };
