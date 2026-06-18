@@ -14,9 +14,11 @@ type PreTripChecklistProps = {
   stats: PreTripChecklistStats;
   isLoading: boolean;
   errorMessage?: string;
+  expandedGuideItemId: string | null;
   onBack: () => void;
   onRunDiagnostic: () => void;
   onToggleItem: (itemId: string) => void;
+  onToggleGuide: (itemId: string) => void;
 };
 
 export default function PreTripChecklist({
@@ -27,9 +29,11 @@ export default function PreTripChecklist({
   stats,
   isLoading,
   errorMessage,
+  expandedGuideItemId,
   onBack,
   onRunDiagnostic,
   onToggleItem,
+  onToggleGuide,
 }: PreTripChecklistProps) {
   return (
     <ScrollView
@@ -46,9 +50,11 @@ export default function PreTripChecklist({
         stats={stats}
         isLoading={isLoading}
         errorMessage={errorMessage}
+        expandedGuideItemId={expandedGuideItemId}
         onBack={onBack}
         onRunDiagnostic={onRunDiagnostic}
         onToggleItem={onToggleItem}
+        onToggleGuide={onToggleGuide}
       />
     </ScrollView>
   );

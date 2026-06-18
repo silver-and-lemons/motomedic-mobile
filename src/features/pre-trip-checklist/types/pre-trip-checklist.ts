@@ -7,6 +7,8 @@ export type PreTripChecklistItem = {
   id: string;
   title: string;
   description: string;
+  guideSteps?: string[];
+  whyThisMatters?: string;
   priority: PreTripChecklistPriority;
   state: PreTripChecklistItemState;
   completed: boolean;
