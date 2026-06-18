@@ -29,7 +29,6 @@ export default function ChecklistItemRow({
   onToggleGuide,
 }: ChecklistItemRowProps) {
   const isStatusMode = mode === 'status';
-  const guideSteps = item.guideSteps?.length ? item.guideSteps : [item.description];
   const GuideIcon = isGuideExpanded ? ChevronUp : ChevronDown;
 
   function handleGuidePress(event?: GestureResponderEvent): void {
@@ -84,23 +83,9 @@ export default function ChecklistItemRow({
               How to check
             </ChecklistText>
           </ChecklistSurface>
-          <ChecklistSurface className="gap-2 border-0 bg-transparent p-0">
-            {guideSteps.map((step) => (
-              <ChecklistText key={step} tone="secondary" className="text-xs leading-5">
-                {guideSteps.length > 1 ? `- ${step}` : step}
-              </ChecklistText>
-            ))}
-          </ChecklistSurface>
-          {item.whyThisMatters && (
-            <ChecklistSurface className="gap-1 border-0 bg-transparent p-0">
-              <ChecklistText className="text-xs font-black uppercase text-[#21f4b7]">
-                Why this matters
-              </ChecklistText>
-              <ChecklistText tone="muted" className="text-xs leading-5">
-                {item.whyThisMatters}
-              </ChecklistText>
-            </ChecklistSurface>
-          )}
+          <ChecklistText tone="secondary" className="text-xs leading-5">
+            {item.description}
+          </ChecklistText>
         </ChecklistSurface>
       )}
     </ChecklistSurface>
