@@ -11,14 +11,18 @@ type ChecklistSectionProps = {
   section: PreTripChecklistSectionType;
   checkedItemIds: Set<string>;
   mode: PreTripChecklistMode;
+  expandedGuideItemId: string | null;
   onToggleItem: (itemId: string) => void;
+  onToggleGuide: (itemId: string) => void;
 };
 
 export default function ChecklistSection({
   section,
   checkedItemIds,
   mode,
+  expandedGuideItemId,
   onToggleItem,
+  onToggleGuide,
 }: ChecklistSectionProps) {
   const [expanded, setExpanded] = useState(mode === 'status' || section.id === 'bike-health');
   const variant = section.id === 'additional' ? 'line' : 'status';
@@ -39,7 +43,9 @@ export default function ChecklistSection({
               checked={checkedItemIds.has(item.id)}
               mode={mode}
               variant={variant}
+              isGuideExpanded={expandedGuideItemId === item.id}
               onToggle={onToggleItem}
+              onToggleGuide={onToggleGuide}
             />
           ))}
         </ChecklistSurface>
