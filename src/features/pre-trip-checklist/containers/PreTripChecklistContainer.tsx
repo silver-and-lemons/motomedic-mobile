@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { router, type Href } from 'expo-router';
 import PreTripChecklist from '../components/PreTripChecklist';
 import { usePreTripChecklist } from '../hooks/use-pre-trip-checklist';
@@ -22,6 +22,7 @@ export default function PreTripChecklistContainer({
 }: PreTripChecklistContainerProps) {
   const { data, isLoading, error } = usePreTripChecklist();
   const profile = useMotorcycleProfileStore((state) => state.profile);
+  const [expandedGuideItemId, setExpandedGuideItemId] = useState<string | null>(null);
   const checkedItemIds = usePreTripChecklistStore((state) => state.checkedItemIds);
   const toggleItem = usePreTripChecklistStore((state) => state.toggleItem);
   const setCheckedItemIds = usePreTripChecklistStore((state) => state.setCheckedItemIds);
@@ -60,6 +61,12 @@ export default function PreTripChecklistContainer({
     toggleItem(itemId);
   }
 
+  function handleToggleGuide(itemId: string): void {
+    setExpandedGuideItemId((currentItemId) =>
+      currentItemId === itemId ? null : itemId
+    );
+  }
+
   function handleRunDiagnostic(): void {
     if (mode === 'status') {
       router.replace(DASHBOARD_ROUTE);
@@ -82,9 +89,11 @@ export default function PreTripChecklistContainer({
       stats={stats}
       isLoading={isLoading}
       errorMessage={error?.message}
+      expandedGuideItemId={expandedGuideItemId}
       onBack={() => router.back()}
       onRunDiagnostic={handleRunDiagnostic}
       onToggleItem={handleToggleItem}
+      onToggleGuide={handleToggleGuide}
     />
   );
 }

@@ -19,9 +19,11 @@ type PreTripChecklistContentProps = {
   stats: PreTripChecklistStats;
   isLoading: boolean;
   errorMessage?: string;
+  expandedGuideItemId: string | null;
   onBack: () => void;
   onRunDiagnostic: () => void;
   onToggleItem: (itemId: string) => void;
+  onToggleGuide: (itemId: string) => void;
 };
 
 export default function PreTripChecklistContent({
@@ -32,9 +34,11 @@ export default function PreTripChecklistContent({
   stats,
   isLoading,
   errorMessage,
+  expandedGuideItemId,
   onBack,
   onRunDiagnostic,
   onToggleItem,
+  onToggleGuide,
 }: PreTripChecklistContentProps) {
   const isStatusMode = mode === 'status';
 
@@ -74,7 +78,9 @@ export default function PreTripChecklistContent({
           section={section}
           checkedItemIds={checkedItemIds}
           mode={mode}
+          expandedGuideItemId={expandedGuideItemId}
           onToggleItem={onToggleItem}
+          onToggleGuide={onToggleGuide}
         />
       ))}
 
