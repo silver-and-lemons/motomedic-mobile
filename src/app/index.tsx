@@ -1,5 +1,5 @@
-import LandingContainer from '../features/landing/containers/LandingContainer';
+import BikeCatalogueContainer from '../features/bike-catalogue/containers/BikeCatalogueContainer';
 
 export default function Index() {
-  return <LandingContainer />;
+  return <BikeCatalogueContainer />;
 }
