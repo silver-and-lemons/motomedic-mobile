@@ -22,6 +22,7 @@ type PreTripChecklistContentProps = {
   onBack: () => void;
   onRunDiagnostic: () => void;
   onToggleItem: (itemId: string) => void;
+  onSetOdometer?: () => void;
 };
 
 export default function PreTripChecklistContent({
@@ -35,6 +36,7 @@ export default function PreTripChecklistContent({
   onBack,
   onRunDiagnostic,
   onToggleItem,
+  onSetOdometer,
 }: PreTripChecklistContentProps) {
   const isStatusMode = mode === 'status';
 
@@ -92,6 +94,17 @@ export default function PreTripChecklistContent({
           onPress={onRunDiagnostic}
         >
           {isStatusMode ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
+        </Button>
+      )}
+
+      {isStatusMode && onSetOdometer && (
+        <Button
+          variant="outline"
+          className="mt-2 h-14 rounded-md border-[#21f4b7]"
+          textClassName="text-xs font-black text-[#21f4b7]"
+          onPress={onSetOdometer}
+        >
+          SET ODOMETER
         </Button>
       )}
     </>
