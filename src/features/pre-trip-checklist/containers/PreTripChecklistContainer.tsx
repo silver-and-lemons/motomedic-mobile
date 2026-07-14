@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { router, type Href } from 'expo-router';
 import PreTripChecklist from '../components/PreTripChecklist';
 import { usePreTripChecklist } from '../hooks/use-pre-trip-checklist';
@@ -24,9 +24,11 @@ export default function PreTripChecklistContainer({
 }: PreTripChecklistContainerProps) {
   const { data, isLoading, error } = usePreTripChecklist();
   const profile = useMotorcycleProfileStore((state) => state.profile);
+  const [expandedGuideItemId, setExpandedGuideItemId] = useState<string | null>(null);
   const checkedItemIds = usePreTripChecklistStore((state) => state.checkedItemIds);
   const toggleItem = usePreTripChecklistStore((state) => state.toggleItem);
   const setCheckedItemIds = usePreTripChecklistStore((state) => state.setCheckedItemIds);
+  const markCompleted = usePreTripChecklistStore((state) => state.markCompleted);
   const isMileageComplete = useMileageStore((state) => state.isComplete);
   const sections = useMemo(
     () => filterRelevantSections(data, profile),
@@ -62,15 +64,22 @@ export default function PreTripChecklistContainer({
     toggleItem(itemId);
   }
 
+  function handleToggleGuide(itemId: string): void {
+    setExpandedGuideItemId((currentItemId) =>
+      currentItemId === itemId ? null : itemId
+    );
+  }
+
   function handleRunDiagnostic(): void {
     if (mode === 'status') {
-      router.replace(CHECKLIST_ROUTE);
+      router.replace(DASHBOARD_ROUTE);
       return;
     }
 
     if (checkedItemIds.length === 0) {
       setCheckedItemIds(getDefaultCheckedItemIds(sections));
     }
+    markCompleted();
     router.push(CHECKLIST_STATUS_ROUTE);
   }
 
@@ -91,9 +100,11 @@ export default function PreTripChecklistContainer({
       stats={stats}
       isLoading={isLoading}
       errorMessage={error?.message}
+      expandedGuideItemId={expandedGuideItemId}
       onBack={() => router.back()}
       onRunDiagnostic={handleRunDiagnostic}
       onToggleItem={handleToggleItem}
+      onToggleGuide={handleToggleGuide}
       onSetOdometer={isMileageComplete ? undefined : handleSetOdometer}
       onGoToDashboard={handleGoToDashboard}
     />

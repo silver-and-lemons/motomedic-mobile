@@ -14,9 +14,11 @@ type PreTripChecklistProps = {
   stats: PreTripChecklistStats;
   isLoading: boolean;
   errorMessage?: string;
+  expandedGuideItemId: string | null;
   onBack: () => void;
   onRunDiagnostic: () => void;
   onToggleItem: (itemId: string) => void;
+  onToggleGuide: (itemId: string) => void;
   onSetOdometer?: () => void;
   onGoToDashboard?: () => void;
 };
@@ -29,9 +31,11 @@ export default function PreTripChecklist({
   stats,
   isLoading,
   errorMessage,
+  expandedGuideItemId,
   onBack,
   onRunDiagnostic,
   onToggleItem,
+  onToggleGuide,
   onSetOdometer,
   onGoToDashboard,
 }: PreTripChecklistProps) {
@@ -50,9 +54,11 @@ export default function PreTripChecklist({
         stats={stats}
         isLoading={isLoading}
         errorMessage={errorMessage}
+        expandedGuideItemId={expandedGuideItemId}
         onBack={onBack}
         onRunDiagnostic={onRunDiagnostic}
         onToggleItem={onToggleItem}
+        onToggleGuide={onToggleGuide}
         onSetOdometer={onSetOdometer}
         onGoToDashboard={onGoToDashboard}
       />
