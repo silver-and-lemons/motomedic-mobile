@@ -1,8 +1,7 @@
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { Bike, ChevronRight, Settings } from 'lucide-react-native';
-import MileageCard from '../components/MileageCard';
-import ServiceCountdown from '../components/ServiceCountdown';
+import WearGaugeBoard from '../components/WearGaugeBoard';
 import { useMileage } from '../hooks/use-mileage';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
 import {
@@ -11,18 +10,12 @@ import {
   COOLING_TYPE_LABELS,
 } from '../../motorcycle-profile/types/motorcycle-profile';
 
-const ODOMETER_EDIT_ROUTE = '/odometer-input' as Href;
+const ODOMETER_ROUTE = '/odometer-input' as Href;
 const SETTINGS_ROUTE = '/settings' as Href;
 const CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
 
 export default function MileageDashboardContainer() {
-  const {
-    currentKm,
-    cumulativeMileage,
-    serviceIntervalKm,
-    kmToNextService,
-    serviceProgress,
-  } = useMileage();
+  const { currentKm } = useMileage();
   const profile = useMotorcycleProfileStore((s) => s.profile);
 
   return (
@@ -30,58 +23,54 @@ export default function MileageDashboardContainer() {
       <View className="gap-5 px-5 pt-12 pb-10">
         <View className="flex-row items-center justify-between">
           <View>
-            <Text className="text-xs font-semibold text-muted">Dashboard</Text>
+            <Text className="text-xs font-semibold text-[#8A999E]">Dashboard</Text>
             <Text className="text-2xl font-extrabold text-white">My Bike</Text>
           </View>
           <Pressable
             onPress={() => router.push(SETTINGS_ROUTE)}
-            className="h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-surface-card active:opacity-70"
+            className="h-10 w-10 items-center justify-center rounded-full border border-[#1e2d33] bg-[#121B1E] active:opacity-70"
           >
-            <Settings size={18} color="#94a3b8" />
+            <Settings size={18} color="#8A999E" />
           </Pressable>
         </View>
 
         {profile && (
-          <View className="rounded-xl border border-slate-700 bg-surface-card p-5">
+          <View className="rounded-2xl border border-[#1e2d33] bg-[#121B1E] p-5">
             <View className="mb-3 flex-row items-center gap-2">
-              <Bike size={20} color="#0ea5e9" />
-              <Text className="text-sm font-medium text-muted">Bike Info</Text>
+              <Bike size={20} color="#16FFB0" />
+              <Text className="text-sm font-medium text-[#8A999E]">Bike Info</Text>
             </View>
-
             <Text className="text-lg font-bold text-white">
               {VEHICLE_TYPE_LABELS[profile.vehicleType] ?? profile.vehicleType}
             </Text>
-
             <View className="mt-3 gap-2">
               <InfoRow label="Engine" value={`${profile.engineSizeCc}cc`} />
               <InfoRow label="Fuel" value={FUEL_TYPE_LABELS[profile.fuelType] ?? profile.fuelType} />
               <InfoRow label="Cooling" value={COOLING_TYPE_LABELS[profile.coolingType] ?? profile.coolingType} />
               <InfoRow label="Year" value={String(profile.bikeAge)} />
             </View>
+            {currentKm > 0 && (
+              <View className="mt-3 flex-row items-center justify-between border-t border-[#1e2d33] pt-3">
+                <Text className="text-xs text-[#8A999E]">Odometer</Text>
+                <Text className="text-xs font-bold text-[#16FFB0]">
+                  {currentKm.toLocaleString()} km
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
-        <MileageCard
-          currentKm={currentKm}
-          cumulativeMileage={cumulativeMileage}
-          onEdit={() => router.push(ODOMETER_EDIT_ROUTE)}
-        />
-
-        <ServiceCountdown
-          kmToNextService={kmToNextService}
-          serviceIntervalKm={serviceIntervalKm}
-          serviceProgress={serviceProgress}
-        />
+        <WearGaugeBoard onCheckOdometer={() => router.push(ODOMETER_ROUTE)} />
 
         <Pressable
           onPress={() => router.push(CHECKLIST_ROUTE)}
-          className="flex-row items-center justify-between rounded-xl border border-slate-700 bg-surface-card p-5 active:opacity-70"
+          className="flex-row items-center justify-between rounded-2xl border border-[#1e2d33] bg-[#121B1E] p-5 active:opacity-70"
         >
           <View>
-            <Text className="text-sm font-medium text-muted">Pre-Trip Check</Text>
+            <Text className="text-sm font-medium text-[#8A999E]">Pre-Trip Check</Text>
             <Text className="text-base font-bold text-white">Run self-diagnostic</Text>
           </View>
-          <ChevronRight size={20} color="#94a3b8" />
+          <ChevronRight size={20} color="#8A999E" />
         </Pressable>
       </View>
     </ScrollView>
@@ -91,7 +80,7 @@ export default function MileageDashboardContainer() {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View className="flex-row items-center justify-between">
-      <Text className="text-xs text-muted">{label}</Text>
+      <Text className="text-xs text-[#8A999E]">{label}</Text>
       <Text className="text-xs font-semibold text-white">{value}</Text>
     </View>
   );

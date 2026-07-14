@@ -18,6 +18,7 @@ type PreTripChecklistProps = {
   onRunDiagnostic: () => void;
   onToggleItem: (itemId: string) => void;
   onSetOdometer?: () => void;
+  onGoToDashboard?: () => void;
 };
 
 export default function PreTripChecklist({
@@ -32,6 +33,7 @@ export default function PreTripChecklist({
   onRunDiagnostic,
   onToggleItem,
   onSetOdometer,
+  onGoToDashboard,
 }: PreTripChecklistProps) {
   return (
     <ScrollView
@@ -52,6 +54,7 @@ export default function PreTripChecklist({
         onRunDiagnostic={onRunDiagnostic}
         onToggleItem={onToggleItem}
         onSetOdometer={onSetOdometer}
+        onGoToDashboard={onGoToDashboard}
       />
     </ScrollView>
   );
