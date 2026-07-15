@@ -1,114 +1,57 @@
-# Mileage Feature - How To Guide
-
-## Accessing the Mileage Feature
-
-### First-Time Users (Fresh Install)
-
-1. Open the app — you'll see the **Bike Catalogue** screen
-2. Select your bike and complete the setup flow (Questionnaire → Pre-Trip Checklist → Checklist Status)
-3. On the **Checklist Status** screen, tap **"SET ODOMETER"** button at the bottom
-4. Enter your starting mileage in the input field and tap **"Confirm"**
-5. You'll see the summary view with wear status — tap **"Back to home"** to go to the Dashboard
-
-### Returning Users (Setup Complete)
-
-- Opening the app takes you directly to the **Dashboard**
-- The **Wear gauge board** section shows your mileage in a glowing circular gauge with wear status rings for Oil, Brake, Chains, and Tyre
-
-### Accessing Odometer / Settings
-
-From the **Dashboard**:
-- Tap **"Check Odometer"** button → navigates to the **Vehicle Odometer** screen (summary view with status metrics)
-- Tap the **gear icon** (top right) → navigates to **Settings** (maintenance status, record oil change, clear data)
-
-### Direct URL Navigation (Development)
-
-| Screen | Route |
-|---|---|
-| Dashboard (home) | `/` (when profile + odometer are set) |
-| Vehicle Odometer | `/odometer-input` |
-| Settings | `/settings` |
-
----
-
-## Screens
-
-### Dashboard
-
-1. **Header** — "My Bike" with settings gear icon
-2. **Bike Info Card** — vehicle type, engine, fuel, cooling, year + odometer reading
-3. **Wear gauge board** — glowing neon mint circular gauge with motorcycle icon, surrounded by 4 status rings (Oil, Brake, Chains, Tyre), "Check Odometer" button
-4. **Pre-Trip Check** — quick link to self-diagnostic
-
-### Vehicle Odometer (Full Screen)
-
-**State A — Initial Entry:**
-- Large neon mint gauge with motorcycle icon
-- "Enter your starting Mileage" prompt + text input
-- "Confirm" button
-
-**State B — Summary:**
-- Same gauge now showing "nn km"
-- Vertical list of 4 wear status items (Oil, Brake, Chain, Tyre)
-- "Go to Maintenance" (coral) + "Back to home" (neon mint) buttons
-
-### Settings (Maintenance Status)
-
-- Current odometer reading + service details
-- Wear status cards for Oil, Brake, Chain, Tyre
-- "Record Oil Change" + "Clear All Mileage Data" buttons
+What Was Done (feat/mileage-input branch)
+1. Bike Catalogue Selection Flow (57cff2d, e3f5c2f)
+- Built a full bike catalogue screen where users can browse/search/filter motorcycles by brand
+- Created src/features/bike-catalogue/ with screen, container, hooks, service, types, data, and mapper
+- Mapper converts a selected catalogue bike into a MotorcycleProfile (vehicle type, engine size, fuel type, cooling type, year)
+- "My bike is NOT in the list" button falls back to the manual questionnaire
+- Added unit tests for the mapper and container (4/5 passing)
+  
+2. Odometer Input (797702e)
+- Created src/features/mileage/ with types, Zustand store (AsyncStorage persistence), hook, components, and containers
+- VehicleOdometer screen with a simple circle display, +/- increment buttons (100 km steps), and direct text input
+- After confirming, shows wear status cards (Oil, Brake, Chain, Tyre) with maintenance/home buttons
+- Mileage store persists currentKm, lastServiceKm, and serviceIntervalKm
+  
+3. Dashboard + Navigation + Design (8e46c98)
+- WearGaugeBoard: neon mint circular gauge with 4 status rings + "Check Odometer" button
+- MileageDashboardContainer: Bike Info card + WearGaugeBoard + Pre-Trip Check link
+- OdometerSettingsContainer: maintenance status, wear detail cards, record service, clear data
+- StatusRing: reusable small circular indicator with icon/label/status
+- GlowingGauge: reusable neon mint circular gauge with glow effect (used in dashboard)
+- Added routes: /dashboard, /odometer-input, /settings
+- Fixed src/app/index.tsx to always start at bike catalogue (removed conditional dashboard)
+- Added "SET ODOMETER" and "GO TO DASHBOARD" buttons to checklist status page
+- Changed app entry to always start at bike catalogue
+- Dark neon-mint theme applied across all new screens
+  
+4. Questionnaire Skip + Odometer Simplification (8e46c98)
+- Bike catalogue now navigates to /questionnaire (policies step) instead of directly to checklist
+- Questionnaire detects existing profile from Zustand and starts at step 5 (Policies Agreement) with form pre-filled
+- Replaced complex GlowingGauge in VehicleOdometer with a simple circle
+- Added increment/decrement buttons (±100 km) with editable text input
+  
+5. Merge Conflict Resolution (1b946ce, 7f6c2d9)
+- Merged main into feat/mileage-input, resolving 4 conflicts:
+- Kept MileageDashboardContainer over DashboardContainer in dashboard.tsx
+- Restored expandable guide feature (expandedGuideItemId, onToggleGuide) from main in PreTripChecklistContent, PreTripChecklist, PreTripChecklistContainer
+- Restored markCompleted/clearCompleted in pre-trip-checklist.store.ts
+- Added expandable guide UI (chevron toggle + "How to check" panel) to ChecklistItemRow
+  
+6. Documentation (REPORT.md)
+- Feature documentation covering navigation flow, screens, theme colours, service intervals, and file reference
+  
+Files Changed (30 total, +1649 / -9)
 
 ---
 
-## Theme
-
-| Element | Color |
-|---|---|
-| Background | `#0D1518` / `#121B1E` |
-| Primary accent (neon mint) | `#16FFB0` |
-| Warning (coral red) | `#FF6B4A` |
-| Headers | `#FFFFFF` |
-| Secondary text | `#8A999E` |
-| Card borders | `#1e2d33` |
-
----
-
-## Service Intervals (Fixed by Engine Size)
-
-| Engine Size | Interval |
-|---|---|
-| ≤ 125cc | 3,000 km |
-| 126–155cc | 4,000 km |
-| ≥ 156cc | 5,000 km |
-
----
-
-## File Reference
-
-### Current Files
-
-| File | Purpose |
-|---|---|
-| `src/config/constants.ts` | Service interval lookup |
-| `src/features/mileage/types/mileage.ts` | `OdometerReading` type |
-| `src/store/mileage.store.ts` | Zustand store with AsyncStorage persistence |
-| `src/features/mileage/hooks/use-mileage.ts` | Computes mileage + service data |
-| `src/features/mileage/components/GlowingGauge.tsx` | Reusable neon mint circular gauge |
-| `src/features/mileage/components/StatusRing.tsx` | Small status indicator ring |
-| `src/features/mileage/components/WearGaugeBoard.tsx` | Dashboard wear gauge section |
-| `src/features/mileage/components/VehicleOdometer.tsx` | Full-screen odometer (2 states) |
-| `src/features/mileage/containers/OdometerInputContainer.tsx` | Container for odometer screen |
-| `src/features/mileage/containers/MileageDashboardContainer.tsx` | Container for dashboard |
-| `src/features/mileage/containers/OdometerSettingsContainer.tsx` | Container for settings |
-| `src/app/odometer-input.tsx` | Route: vehicle odometer |
-| `src/app/dashboard.tsx` | Route: dashboard |
-| `src/app/settings.tsx` | Route: settings |
-
-### Modified Files
-
-| File | Change |
-|---|---|
-| `src/app/index.tsx` | Conditional: Dashboard if setup done, BikeCatalogue otherwise |
-| `src/features/pre-trip-checklist/components/PreTripChecklist.tsx` | Added `onSetOdometer` prop |
-| `src/features/pre-trip-checklist/components/organisms/PreTripChecklistContent.tsx` | Added "SET ODOMETER" button |
-| `src/features/pre-trip-checklist/containers/PreTripChecklistContainer.tsx` | Wired odometer navigation |
+| Area               | New Files                                                             | Modified Files                                                                        |
+| :----------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| **Bike Catalogue** | 8 (Screen, Container, Hooks, Service, Mapper, Types, Data, Queries)   | —                                                                                     |
+| **Mileage** | 9 (Types, Store, Hook, 4 Components, 3 Containers)                    | —                                                                                     |
+| **App Routes** | 3 (`dashboard.tsx`, `odometer-input.tsx`, `settings.tsx`)             | `index.tsx`                                                                           |
+| **Questionnaire** | —                                                                     | `QuestionnaireContainer.tsx`                                                          |
+| **Checklist** | —                                                                     | `PreTripChecklist.tsx`, `PreTripChecklistContent.tsx`, `PreTripChecklistContainer.tsx` |
+| **Config** | —                                                                     | `constants.ts`                                                                        |
+| **Tests** | 2 (`BikeCatalogueContainer.test.tsx`, `bike-catalogue-mapper.test.ts`) | —                                                                                     |
+| **Docs** | 1 (`REPORT.md`)                                                       | —                                                                                     |
+| **Store** | —                                                                     | `pre-trip-checklist.store.ts`       
