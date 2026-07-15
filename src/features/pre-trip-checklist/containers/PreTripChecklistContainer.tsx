@@ -8,6 +8,7 @@ import type {
 } from '../types/pre-trip-checklist';
 import { usePreTripChecklistStore } from '../../../store/pre-trip-checklist.store';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
+import { useMileageStore } from '../../../store/mileage.store';
 
 type PreTripChecklistContainerProps = {
   mode: PreTripChecklistMode;
@@ -15,6 +16,7 @@ type PreTripChecklistContainerProps = {
 
 const CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
 const CHECKLIST_STATUS_ROUTE = '/pre-trip-checklist-status' as Href;
+const ODOMETER_INPUT_ROUTE = '/odometer-input' as Href;
 const DASHBOARD_ROUTE = '/dashboard' as Href;
 
 export default function PreTripChecklistContainer({
@@ -27,6 +29,7 @@ export default function PreTripChecklistContainer({
   const toggleItem = usePreTripChecklistStore((state) => state.toggleItem);
   const setCheckedItemIds = usePreTripChecklistStore((state) => state.setCheckedItemIds);
   const markCompleted = usePreTripChecklistStore((state) => state.markCompleted);
+  const isMileageComplete = useMileageStore((state) => state.isComplete);
   const sections = useMemo(
     () => filterRelevantSections(data, profile),
     [data, profile]
@@ -80,6 +83,14 @@ export default function PreTripChecklistContainer({
     router.push(CHECKLIST_STATUS_ROUTE);
   }
 
+  function handleSetOdometer(): void {
+    router.push(ODOMETER_INPUT_ROUTE);
+  }
+
+  function handleGoToDashboard(): void {
+    router.push(DASHBOARD_ROUTE);
+  }
+
   return (
     <PreTripChecklist
       sections={sections}
@@ -94,6 +105,8 @@ export default function PreTripChecklistContainer({
       onRunDiagnostic={handleRunDiagnostic}
       onToggleItem={handleToggleItem}
       onToggleGuide={handleToggleGuide}
+      onSetOdometer={isMileageComplete ? undefined : handleSetOdometer}
+      onGoToDashboard={handleGoToDashboard}
     />
   );
 }

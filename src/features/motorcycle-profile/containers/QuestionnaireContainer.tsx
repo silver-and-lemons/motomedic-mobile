@@ -32,14 +32,16 @@ const STEPS = [
 const PRE_TRIP_CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
 
 export default function QuestionnaireContainer() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const savedProfile = useMotorcycleProfileStore((s) => s.profile);
+  const startAtPolicies = savedProfile !== null;
+  const [currentStep, setCurrentStep] = useState(startAtPolicies ? 5 : 0);
   const [showSummary, setShowSummary] = useState(false);
   const saveProfile = useMotorcycleProfileStore((s) => s.saveProfile);
   const mutation = useGenerateChecklist();
 
   const form = useForm<MotorcycleProfile>({
     resolver: zodResolver(motorcycleProfileSchema),
-    defaultValues: questionnaireDefaultValues,
+    defaultValues: startAtPolicies ? savedProfile! : questionnaireDefaultValues,
     mode: 'onChange',
   });
 
@@ -61,12 +63,14 @@ export default function QuestionnaireContainer() {
   const goBack = useCallback(() => {
     if (showSummary) {
       setShowSummary(false);
+    } else if (startAtPolicies) {
+      router.back();
     } else if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     } else {
       router.back();
     }
-  }, [currentStep, showSummary]);
+  }, [currentStep, showSummary, startAtPolicies]);
 
   const handleAgree = useCallback(() => {
     setShowSummary(false);
@@ -114,7 +118,7 @@ export default function QuestionnaireContainer() {
           </View>
 
           {/* Step Indicator */}
-          {!showSummary && (
+          {!showSummary && !startAtPolicies && (
             <View className="mb-6">
               <Text className="text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-3">
                 Step {currentStep + 1} of {STEPS.length}

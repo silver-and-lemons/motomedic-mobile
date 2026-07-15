@@ -22,7 +22,6 @@ type BikeCatalogueScreenProps = {
   search: string;
   isLoading: boolean;
   errorMessage?: string;
-  isSubmitting: boolean;
   onBack: () => void;
   onBrandChange: (brand: BikeBrandFilter) => void;
   onFallback: () => void;
@@ -39,7 +38,6 @@ export default function BikeCatalogueScreen({
   search,
   isLoading,
   errorMessage,
-  isSubmitting,
   onBack,
   onBrandChange,
   onFallback,
@@ -173,12 +171,12 @@ export default function BikeCatalogueScreen({
             </Button>
             <Pressable
               accessibilityRole="button"
-              disabled={!selectedBikeId || isSubmitting}
+              disabled={!selectedBikeId}
               onPress={onProceed}
               className="items-center active:opacity-70 disabled:opacity-40"
             >
               <Text className="text-base font-extrabold text-[#0ea5e9]">
-                {isSubmitting ? 'GENERATING...' : 'PROCEED >'}
+                PROCEED {'>'}
               </Text>
             </Pressable>
             <Pressable

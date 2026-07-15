@@ -1,5 +1,5 @@
-import DashboardContainer from '../features/dashboard/containers/DashboardContainer';
+import MileageDashboardContainer from '../features/mileage/containers/MileageDashboardContainer';
 
 export default function DashboardScreen() {
-  return <DashboardContainer />;
+  return <MileageDashboardContainer />;
 }
