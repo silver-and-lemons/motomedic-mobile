@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { router, type Href } from 'expo-router';
 import PreTripChecklist from '../components/PreTripChecklist';
 import { usePreTripChecklist } from '../hooks/use-pre-trip-checklist';
@@ -9,6 +9,7 @@ import type {
 import { usePreTripChecklistStore } from '../../../store/pre-trip-checklist.store';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
 import { useMileageStore } from '../../../store/mileage.store';
+import { useChecklistOnboardingStore } from '../../../store/checklist-onboarding.store';
 
 type PreTripChecklistContainerProps = {
   mode: PreTripChecklistMode;
@@ -30,6 +31,19 @@ export default function PreTripChecklistContainer({
   const setCheckedItemIds = usePreTripChecklistStore((state) => state.setCheckedItemIds);
   const markCompleted = usePreTripChecklistStore((state) => state.markCompleted);
   const isMileageComplete = useMileageStore((state) => state.isComplete);
+
+  const hasCompletedOnboarding = useChecklistOnboardingStore((state) => state.hasCompletedOnboarding);
+  const onboardingStep = useChecklistOnboardingStore((state) => state.currentStep);
+  const startOnboarding = useChecklistOnboardingStore((state) => state.startOnboarding);
+  const nextOnboardingStep = useChecklistOnboardingStore((state) => state.nextStep);
+  const skipOnboarding = useChecklistOnboardingStore((state) => state.skipOnboarding);
+
+  useEffect(() => {
+    if (mode === 'checklist' && !hasCompletedOnboarding && onboardingStep === 0) {
+      startOnboarding();
+    }
+  }, [mode, hasCompletedOnboarding, onboardingStep, startOnboarding]);
+
   const sections = useMemo(
     () => filterRelevantSections(data, profile),
     [data, profile]
@@ -101,6 +115,9 @@ export default function PreTripChecklistContainer({
       isLoading={isLoading}
       errorMessage={error?.message}
       expandedGuideItemId={expandedGuideItemId}
+      onboardingStep={onboardingStep}
+      onNextOnboardingStep={nextOnboardingStep}
+      onSkipOnboarding={skipOnboarding}
       onBack={() => router.back()}
       onRunDiagnostic={handleRunDiagnostic}
       onToggleItem={handleToggleItem}

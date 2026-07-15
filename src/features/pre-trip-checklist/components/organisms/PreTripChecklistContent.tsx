@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import { ArrowLeft, MoreHorizontal } from 'lucide-react-native';
 import { Button } from '../../../../components/atoms/Button';
 import ChecklistHeaderCard from '../molecules/ChecklistHeaderCard';
@@ -10,6 +11,7 @@ import type {
   PreTripChecklistSection as PreTripChecklistSectionType,
   PreTripChecklistStats,
 } from '../../types/pre-trip-checklist';
+import type { ChecklistOnboardingStepId, OnboardingTargetLayout } from '../../types/checklist-onboarding';
 
 type PreTripChecklistContentProps = {
   sections: PreTripChecklistSectionType[];
@@ -26,6 +28,7 @@ type PreTripChecklistContentProps = {
   onToggleGuide: (itemId: string) => void;
   onSetOdometer?: () => void;
   onGoToDashboard?: () => void;
+  onTargetLayout?: (stepId: ChecklistOnboardingStepId, layout: OnboardingTargetLayout) => void;
 };
 
 export default function PreTripChecklistContent({
@@ -43,8 +46,27 @@ export default function PreTripChecklistContent({
   onToggleGuide,
   onSetOdometer,
   onGoToDashboard,
+  onTargetLayout,
 }: PreTripChecklistContentProps) {
   const isStatusMode = mode === 'status';
+
+  /**
+   * Measure the absolute screen position of a target element.
+   * Uses the native `measure()` API which returns pageY (absolute Y on screen).
+   */
+  function handleMeasure(stepId: ChecklistOnboardingStepId) {
+    return (ref: View | null) => {
+      if (!ref || !onTargetLayout) return;
+      // Small delay to let layout settle
+      setTimeout(() => {
+        ref.measure((_x, _y, _w, h, _pageX, pageY) => {
+          if (typeof pageY === 'number' && typeof h === 'number') {
+            onTargetLayout(stepId, { y: pageY, height: h });
+          }
+        });
+      }, 300);
+    };
+  }
 
   if (isLoading) {
     return (
@@ -74,18 +96,38 @@ export default function PreTripChecklistContent({
         <ChecklistIconButton icon={MoreHorizontal} accessibilityLabel="Checklist options" />
       </ChecklistSurface>
 
-      <ChecklistHeaderCard stats={stats} />
-
-      {sections.map((section) => (
-        <ChecklistSection
-          key={section.id}
-          section={section}
-          checkedItemIds={checkedItemIds}
-          mode={mode}
-          expandedGuideItemId={expandedGuideItemId}
-          onToggleItem={onToggleItem}
-          onToggleGuide={onToggleGuide}
+      {/* health-score target: the whole header card with the ring + scheduling text */}
+      <View ref={handleMeasure('health-score')} collapsable={false}>
+        <ChecklistHeaderCard
+          stats={stats}
+          onHealthScoreLayout={(layout) => onTargetLayout?.('health-score', layout)}
+          onSchedulingLayout={(layout) => onTargetLayout?.('smart-scheduling', layout)}
         />
+      </View>
+
+      {sections.map((section, index) => (
+        <View
+          key={section.id}
+          ref={index === 0 ? handleMeasure('component-checklist') : undefined}
+          collapsable={false}
+        >
+          <ChecklistSection
+            section={section}
+            checkedItemIds={checkedItemIds}
+            mode={mode}
+            expandedGuideItemId={expandedGuideItemId}
+            onToggleItem={onToggleItem}
+            onToggleGuide={onToggleGuide}
+            onFirstItemLayout={index === 0
+              ? (layout) => {
+                  onTargetLayout?.('log-status', layout);
+                  onTargetLayout?.('log-status-good', layout);
+                  onTargetLayout?.('log-status-bad', layout);
+                }
+              : undefined
+            }
+          />
+        </View>
       ))}
 
       {!isStatusMode && !canProceedToDiagnostic && (
