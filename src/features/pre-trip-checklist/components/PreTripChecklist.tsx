@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
-import { ScrollView } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { View } from 'react-native';
+import { ScrollView, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native';
 import PreTripChecklistContent from './organisms/PreTripChecklistContent';
 import ChecklistOnboarding from './organisms/ChecklistOnboarding';
 import type {
@@ -53,6 +54,7 @@ export default function PreTripChecklist({
   onGoToDashboard,
 }: PreTripChecklistProps) {
   const [targetLayouts, setTargetLayouts] = useState<OnboardingTargetLayouts>({});
+  const [scrollOffsetY, setScrollOffsetY] = useState(0);
 
   const handleTargetLayout = useCallback(
     (stepId: ChecklistOnboardingStepId, layout: OnboardingTargetLayout) => {
@@ -61,13 +63,19 @@ export default function PreTripChecklist({
     []
   );
 
+  function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
+    setScrollOffsetY(e.nativeEvent.contentOffset.y);
+  }
+
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <ScrollView
         className="flex-1 bg-[#0b171b]"
         contentContainerStyle={{ gap: 24, padding: 20, paddingBottom: 34 }}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         <PreTripChecklistContent
           sections={sections}
@@ -93,7 +101,8 @@ export default function PreTripChecklist({
         onNext={onNextOnboardingStep}
         onSkip={onSkipOnboarding}
         targetLayouts={targetLayouts}
+        scrollOffsetY={scrollOffsetY}
       />
-    </>
+    </View>
   );
 }

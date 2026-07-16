@@ -50,14 +50,9 @@ export default function PreTripChecklistContent({
 }: PreTripChecklistContentProps) {
   const isStatusMode = mode === 'status';
 
-  /**
-   * Measure the absolute screen position of a target element.
-   * Uses the native `measure()` API which returns pageY (absolute Y on screen).
-   */
   function handleMeasure(stepId: ChecklistOnboardingStepId) {
     return (ref: View | null) => {
       if (!ref || !onTargetLayout) return;
-      // Small delay to let layout settle
       setTimeout(() => {
         ref.measure((_x, _y, _w, h, _pageX, pageY) => {
           if (typeof pageY === 'number' && typeof h === 'number') {
@@ -66,6 +61,28 @@ export default function PreTripChecklistContent({
         });
       }, 300);
     };
+  }
+
+  const ITEM_ID_TO_STEP_ID: Record<string, ChecklistOnboardingStepId> = {
+    'tyre-pressure-condition': 'tyre-pressure',
+    'engine-oil-level': 'engine-oil',
+    'front-rear-brakes': 'front-rear-brakes',
+    'lights': 'lights',
+    'fuel-level': 'fuel-level',
+  };
+
+  function handleRowLayout(itemId: string, layout: OnboardingTargetLayout) {
+    const stepId = ITEM_ID_TO_STEP_ID[itemId];
+    if (stepId) {
+      onTargetLayout?.(stepId, layout);
+    }
+  }
+
+  function handleItemCheckboxLayout(itemId: string, layout: OnboardingTargetLayout) {
+    if (itemId === 'tyre-pressure-condition') {
+      onTargetLayout?.('log-status-good', layout);
+      onTargetLayout?.('log-status-bad', layout);
+    }
   }
 
   if (isLoading) {
@@ -96,21 +113,16 @@ export default function PreTripChecklistContent({
         <ChecklistIconButton icon={MoreHorizontal} accessibilityLabel="Checklist options" />
       </ChecklistSurface>
 
-      {/* health-score target: the whole header card with the ring + scheduling text */}
       <View ref={handleMeasure('health-score')} collapsable={false}>
         <ChecklistHeaderCard
           stats={stats}
           onHealthScoreLayout={(layout) => onTargetLayout?.('health-score', layout)}
-          onSchedulingLayout={(layout) => onTargetLayout?.('smart-scheduling', layout)}
+          onStatusSummaryLayout={(layout) => onTargetLayout?.('status-summary', layout)}
         />
       </View>
 
-      {sections.map((section, index) => (
-        <View
-          key={section.id}
-          ref={index === 0 ? handleMeasure('component-checklist') : undefined}
-          collapsable={false}
-        >
+      {sections.map((section) => (
+        <View key={section.id} collapsable={false}>
           <ChecklistSection
             section={section}
             checkedItemIds={checkedItemIds}
@@ -118,14 +130,19 @@ export default function PreTripChecklistContent({
             expandedGuideItemId={expandedGuideItemId}
             onToggleItem={onToggleItem}
             onToggleGuide={onToggleGuide}
-            onFirstItemLayout={index === 0
+            onFirstItemLayout={section.id === 'bike-health'
               ? (layout) => {
-                  onTargetLayout?.('log-status', layout);
                   onTargetLayout?.('log-status-good', layout);
                   onTargetLayout?.('log-status-bad', layout);
                 }
               : undefined
             }
+            onSectionHeaderLayout={section.id === 'additional'
+              ? (layout) => onTargetLayout?.('additional-checklist', layout)
+              : undefined
+            }
+            onRowLayout={handleRowLayout}
+            onItemCheckboxLayout={handleItemCheckboxLayout}
           />
         </View>
       ))}
@@ -137,14 +154,16 @@ export default function PreTripChecklistContent({
       )}
 
       {(isStatusMode || canProceedToDiagnostic) && (
-        <Button
-          variant="primary"
-          className="mt-2 h-14 rounded-md bg-[#21f4b7]"
-          textClassName="text-xs font-black text-[#061314]"
-          onPress={onRunDiagnostic}
-        >
-          {isStatusMode ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
-        </Button>
+        <View ref={isStatusMode ? undefined : handleMeasure('get-diagnosis')}>
+          <Button
+            variant="primary"
+            className="mt-2 h-14 rounded-md bg-[#21f4b7]"
+            textClassName="text-xs font-black text-[#061314]"
+            onPress={onRunDiagnostic}
+          >
+            {isStatusMode ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
+          </Button>
+        </View>
       )}
 
       {isStatusMode && onSetOdometer && (

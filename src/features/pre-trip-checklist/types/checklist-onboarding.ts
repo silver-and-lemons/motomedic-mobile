@@ -3,11 +3,17 @@ export type TooltipPointerDirection = 'up' | 'down' | 'right' | 'none';
 export type ChecklistOnboardingStepId =
   | 'welcome'
   | 'health-score'
-  | 'smart-scheduling'
-  | 'component-checklist'
-  | 'log-status'
+  | 'status-summary'
   | 'log-status-good'
-  | 'log-status-bad';
+  | 'log-status-bad'
+  | 'checklist-overview'
+  | 'tyre-pressure'
+  | 'engine-oil'
+  | 'front-rear-brakes'
+  | 'lights'
+  | 'fuel-level'
+  | 'additional-checklist'
+  | 'get-diagnosis';
 
 export type ChecklistOnboardingStep = {
   id: ChecklistOnboardingStepId;

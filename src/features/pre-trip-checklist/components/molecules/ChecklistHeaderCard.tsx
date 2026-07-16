@@ -7,12 +7,14 @@ import type { OnboardingTargetLayout } from '../../types/checklist-onboarding';
 type ChecklistHeaderCardProps = {
   stats: PreTripChecklistStats;
   onHealthScoreLayout?: (layout: OnboardingTargetLayout) => void;
+  onStatusSummaryLayout?: (layout: OnboardingTargetLayout) => void;
   onSchedulingLayout?: (layout: OnboardingTargetLayout) => void;
 };
 
 export default function ChecklistHeaderCard({
   stats,
   onHealthScoreLayout,
+  onStatusSummaryLayout,
   onSchedulingLayout,
 }: ChecklistHeaderCardProps) {
   const statusLabel = stats.healthScore >= 80 ? 'STATUS: GOOD' : 'STATUS: NEEDS CHECK';
@@ -56,13 +58,20 @@ export default function ChecklistHeaderCard({
       </View>
 
       <View
-        ref={measureRef(onSchedulingLayout)}
+        ref={measureRef(onStatusSummaryLayout)}
         collapsable={false}
         className="items-center gap-2 px-5"
       >
         <ChecklistText tone="muted" className="text-center text-xs">
           Your bike is in optimal condition. Next scheduled service in
         </ChecklistText>
+      </View>
+
+      <View
+        ref={measureRef(onSchedulingLayout)}
+        collapsable={false}
+        className="items-center gap-2 px-5"
+      >
         <ChecklistText className="text-center text-base font-bold">
           Month Day, Year
         </ChecklistText>

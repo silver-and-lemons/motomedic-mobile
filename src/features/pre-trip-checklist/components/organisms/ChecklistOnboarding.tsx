@@ -1,4 +1,4 @@
-import { Modal, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import OnboardingOverlay from '../atoms/OnboardingOverlay';
 import OnboardingWelcomeCard from '../molecules/OnboardingWelcomeCard';
 import TooltipBubble from '../atoms/TooltipBubble';
@@ -10,6 +10,7 @@ type ChecklistOnboardingProps = {
   onNext: () => void;
   onSkip: () => void;
   targetLayouts: OnboardingTargetLayouts;
+  scrollOffsetY: number;
 };
 
 export default function ChecklistOnboarding({
@@ -17,83 +18,65 @@ export default function ChecklistOnboarding({
   onNext,
   onSkip,
   targetLayouts,
+  scrollOffsetY,
 }: ChecklistOnboardingProps) {
   const isVisible = currentStep > 0;
 
   const stepIndex = currentStep - 1;
   const step = CHECKLIST_ONBOARDING_STEPS[stepIndex];
 
-  if (!step) {
+  if (!step || !isVisible) {
     return null;
   }
 
-  const isWelcome = step.id === 'welcome';
+  const isCentered = step.id === 'welcome' || step.id === 'checklist-overview' || step.id === 'get-diagnosis';
 
   return (
-    <Modal
-      transparent
-      visible={isVisible}
-      animationType="none"
-      statusBarTranslucent
-    >
-      <View style={styles.container}>
-        {/* Dark overlay background — tap anywhere to advance */}
-        <OnboardingOverlay onPress={onNext} />
+    <View style={styles.container} pointerEvents="box-none">
+      <OnboardingOverlay />
 
-        {/* Tooltip positioned based on measured target element */}
-        <View
-          style={[
-            styles.tooltipContainer,
-            isWelcome
-              ? { justifyContent: 'center' }
-              : getTooltipPosition(step.id, step.pointerDirection, targetLayouts),
-          ]}
-          pointerEvents="box-none"
-        >
-          {isWelcome ? (
-            <OnboardingWelcomeCard onProceed={onNext} />
-          ) : (
-            <TooltipBubble
-              title={step.title}
-              body={step.body}
-              pointerDirection={step.pointerDirection}
-              ctaLabel={step.ctaLabel}
-              onCtaPress={onNext}
-            />
-          )}
-        </View>
+      <View
+        style={[
+          styles.tooltipContainer,
+          isCentered
+            ? { justifyContent: 'center' }
+            : getTooltipPosition(step.id, step.pointerDirection, targetLayouts, scrollOffsetY),
+        ]}
+        pointerEvents="box-none"
+      >
+        {isCentered && step.id === 'welcome' ? (
+          <OnboardingWelcomeCard onProceed={onNext} />
+        ) : (
+          <TooltipBubble
+            title={step.title}
+            body={step.body}
+            pointerDirection={step.pointerDirection}
+            ctaLabel={step.ctaLabel}
+            onCtaPress={onNext}
+          />
+        )}
       </View>
-    </Modal>
+    </View>
   );
 }
 
-/**
- * Position the tooltip so its connector line touches the target element.
- *
- * - pointer "up" → tooltip sits BELOW the target element.
- *   Top of the tooltip container = bottom edge of the target.
- *
- * - pointer "down" → tooltip sits ABOVE the target element.
- *   We use paddingTop so the bottom of the tooltip lands near the top
- *   of the target. This is approximate since we don't know the tooltip
- *   height, but placing it with justifyContent flex-end and paddingBottom
- *   from the bottom of the screen achieves the same effect.
- */
 function getTooltipPosition(
   stepId: ChecklistOnboardingStepId,
   pointerDirection: string,
   layouts: OnboardingTargetLayouts,
+  scrollOffsetY: number,
 ): Record<string, string | number | undefined> {
   const layout = layouts[stepId];
 
   if (!layout) {
-    // Fallback if not yet measured
     return { justifyContent: 'center' };
   }
 
+  const adjustedY = layout.y - scrollOffsetY;
+
   if (pointerDirection === 'right') {
     return {
-      top: layout.y,
+      top: Math.max(0, adjustedY),
       bottom: undefined,
       height: layout.height,
       justifyContent: 'center',
@@ -101,26 +84,23 @@ function getTooltipPosition(
   }
 
   if (pointerDirection === 'up') {
-    // Tooltip appears below the target element
-    // Position at the bottom edge of the target
     return {
       justifyContent: 'flex-start',
-      paddingTop: layout.y + layout.height,
+      paddingTop: Math.max(0, adjustedY + layout.height),
     };
   }
 
   // pointerDirection === 'down'
-  // Tooltip appears above the target element
-  // Position so the tooltip + connector ends right at the target's top edge
   return {
     justifyContent: 'flex-start',
-    paddingTop: Math.max(0, layout.y - 180),
+    paddingTop: Math.max(0, adjustedY - 180),
   };
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    ...StyleSheet.absoluteFill,
+    zIndex: 50,
   },
   tooltipContainer: {
     ...StyleSheet.absoluteFill,
