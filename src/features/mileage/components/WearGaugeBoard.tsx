@@ -35,7 +35,7 @@ export default function WearGaugeBoard({ onCheckOdometer }: WearGaugeBoardProps)
           </GlowingGauge>
         </View>
 
-        <View className="mb-6 flex-row items-start justify-center gap-5">
+        <View className="mb-6 flex-row flex-wrap items-start justify-center gap-4">
           <StatusRing
             color="#16FFB0"
             label="Oil"
