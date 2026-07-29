@@ -12,6 +12,7 @@ import type {
   PreTripChecklistStats,
 } from '../../types/pre-trip-checklist';
 import type { ChecklistOnboardingStepId, OnboardingTargetLayout } from '../../types/checklist-onboarding';
+import type { TimerStatus } from '../../../timer/types';
 
 type PreTripChecklistContentProps = {
   sections: PreTripChecklistSectionType[];
@@ -28,6 +29,8 @@ type PreTripChecklistContentProps = {
   onToggleGuide: (itemId: string) => void;
   onSetOdometer?: () => void;
   onGoToDashboard?: () => void;
+  onStartRide?: () => void;
+  timerStatus?: TimerStatus;
   onTargetLayout?: (stepId: ChecklistOnboardingStepId, layout: OnboardingTargetLayout) => void;
 };
 
@@ -46,6 +49,8 @@ export default function PreTripChecklistContent({
   onToggleGuide,
   onSetOdometer,
   onGoToDashboard,
+  onStartRide,
+  timerStatus,
   onTargetLayout,
 }: PreTripChecklistContentProps) {
   const isStatusMode = mode === 'status';
@@ -185,6 +190,17 @@ export default function PreTripChecklistContent({
           onPress={onGoToDashboard}
         >
           GO TO DASHBOARD
+        </Button>
+      )}
+
+      {isStatusMode && onStartRide && timerStatus === 'idle' && (
+        <Button
+          variant="primary"
+          className="mt-2 h-14 rounded-md bg-[#00d4aa]"
+          textClassName="text-xs font-black text-[#061314]"
+          onPress={onStartRide}
+        >
+          START RIDE
         </Button>
       )}
     </>

@@ -13,6 +13,7 @@ import type {
   OnboardingTargetLayout,
   OnboardingTargetLayouts,
 } from '../types/checklist-onboarding';
+import type { TimerStatus } from '../../timer/types';
 
 type PreTripChecklistProps = {
   sections: PreTripChecklistSection[];
@@ -32,6 +33,8 @@ type PreTripChecklistProps = {
   onToggleGuide: (itemId: string) => void;
   onSetOdometer?: () => void;
   onGoToDashboard?: () => void;
+  onStartRide?: () => void;
+  timerStatus?: TimerStatus;
 };
 
 export default function PreTripChecklist({
@@ -52,6 +55,8 @@ export default function PreTripChecklist({
   onToggleGuide,
   onSetOdometer,
   onGoToDashboard,
+  onStartRide,
+  timerStatus,
 }: PreTripChecklistProps) {
   const [targetLayouts, setTargetLayouts] = useState<OnboardingTargetLayouts>({});
   const [scrollOffsetY, setScrollOffsetY] = useState(0);
@@ -92,6 +97,8 @@ export default function PreTripChecklist({
           onToggleGuide={onToggleGuide}
           onSetOdometer={onSetOdometer}
           onGoToDashboard={onGoToDashboard}
+          onStartRide={onStartRide}
+          timerStatus={timerStatus}
           onTargetLayout={handleTargetLayout}
         />
       </ScrollView>

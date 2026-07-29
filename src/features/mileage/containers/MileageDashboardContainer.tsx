@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { Bike, ChevronRight, Settings } from 'lucide-react-native';
 import WearGaugeBoard from '../components/WearGaugeBoard';
+import RideCard from '../../timer/components/RideCard';
+import RideRecordings from '../../timer/components/RideRecordings';
 import { useMileage } from '../hooks/use-mileage';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
 import {
@@ -17,8 +20,10 @@ const CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
 export default function MileageDashboardContainer() {
   const { currentKm } = useMileage();
   const profile = useMotorcycleProfileStore((s) => s.profile);
+  const [recordingsVisible, setRecordingsVisible] = useState(false);
 
   return (
+    <>
     <ScrollView className="flex-1 bg-[#0b171b]">
       <View className="gap-5 px-5 pt-12 pb-10">
         <View className="flex-row items-center justify-between">
@@ -62,6 +67,8 @@ export default function MileageDashboardContainer() {
 
         <WearGaugeBoard onCheckOdometer={() => router.push(ODOMETER_ROUTE)} />
 
+        <RideCard onViewRecordings={() => setRecordingsVisible(true)} />
+
         <Pressable
           onPress={() => router.push(CHECKLIST_ROUTE)}
           className="flex-row items-center justify-between rounded-2xl border border-[#1e2d33] bg-[#121B1E] p-5 active:opacity-70"
@@ -74,6 +81,12 @@ export default function MileageDashboardContainer() {
         </Pressable>
       </View>
     </ScrollView>
+
+    <RideRecordings
+      visible={recordingsVisible}
+      onClose={() => setRecordingsVisible(false)}
+    />
+    </>
   );
 }
 
