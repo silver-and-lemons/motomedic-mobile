@@ -10,6 +10,8 @@ import { usePreTripChecklistStore } from '../../../store/pre-trip-checklist.stor
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
 import { useMileageStore } from '../../../store/mileage.store';
 import { useChecklistOnboardingStore } from '../../../store/checklist-onboarding.store';
+import { useTimerActions } from '../../timer/hooks/use-timer-actions';
+import { useTimerStore } from '../../timer/timer-store';
 
 type PreTripChecklistContainerProps = {
   mode: PreTripChecklistMode;
@@ -37,6 +39,8 @@ export default function PreTripChecklistContainer({
   const startOnboarding = useChecklistOnboardingStore((state) => state.startOnboarding);
   const nextOnboardingStep = useChecklistOnboardingStore((state) => state.nextStep);
   const skipOnboarding = useChecklistOnboardingStore((state) => state.skipOnboarding);
+  const { handleStart: startRideTimer } = useTimerActions();
+  const timerStatus = useTimerStore((state) => state.status);
 
   useEffect(() => {
     if (mode === 'checklist' && !hasCompletedOnboarding && onboardingStep === 0) {
@@ -105,6 +109,11 @@ export default function PreTripChecklistContainer({
     router.push(DASHBOARD_ROUTE);
   }
 
+  function handleStartRide(): void {
+    startRideTimer();
+    router.push(DASHBOARD_ROUTE);
+  }
+
   return (
     <PreTripChecklist
       sections={sections}
@@ -124,6 +133,8 @@ export default function PreTripChecklistContainer({
       onToggleGuide={handleToggleGuide}
       onSetOdometer={isMileageComplete ? undefined : handleSetOdometer}
       onGoToDashboard={handleGoToDashboard}
+      onStartRide={handleStartRide}
+      timerStatus={timerStatus}
     />
   );
 }
