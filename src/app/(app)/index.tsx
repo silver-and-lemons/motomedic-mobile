@@ -18,7 +18,7 @@ export default function Index() {
 
       <Pressable
         className="w-full rounded-full bg-[#0ea5e9] px-6 py-4 active:opacity-80"
-        onPress={() => router.push('/questionnaire')}
+        onPress={() => router.push('/(app)/questionnaire')}
       >
         <Text className="text-center text-base font-semibold text-white">
           Start Questionnaire
