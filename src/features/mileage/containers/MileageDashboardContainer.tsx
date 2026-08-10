@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, type Href } from 'expo-router';
-import { Bike, ChevronRight, Settings } from 'lucide-react-native';
+import { Bike, ChevronRight, Settings, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react-native';
 import WearGaugeBoard from '../components/WearGaugeBoard';
 import RideCard from '../../timer/components/RideCard';
 import RideRecordings from '../../timer/components/RideRecordings';
 import { useMileage } from '../hooks/use-mileage';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
+import { useDiagnosticHistoryStore } from '../../../store/diagnostic-history.store';
+import { getDiagnosticStaleness } from '../utils/staleness';
 import {
   VEHICLE_TYPE_LABELS,
   FUEL_TYPE_LABELS,
@@ -21,6 +23,44 @@ export default function MileageDashboardContainer() {
   const { currentKm } = useMileage();
   const profile = useMotorcycleProfileStore((s) => s.profile);
   const [recordingsVisible, setRecordingsVisible] = useState(false);
+  const history = useDiagnosticHistoryStore((s) => s.history);
+  
+  const lastSnapshot = history.length > 0 ? history[history.length - 1] : null;
+  const stalenessResult = getDiagnosticStaleness(lastSnapshot?.timestamp ?? null);
+
+  let stalenessConfig = {
+    borderColor: 'border-[#1e2d33]',
+    titleColor: 'text-[#8A999E]',
+    subtitleColor: 'text-white',
+    subtitleText: 'Run self-diagnostic',
+    icon: <ChevronRight size={20} color="#8A999E" />
+  };
+
+  if (stalenessResult.state === 'fresh') {
+    stalenessConfig = {
+      borderColor: 'border-[#10b981]',
+      titleColor: 'text-[#10b981]',
+      subtitleColor: 'text-[#10b981]',
+      subtitleText: 'Checked Today',
+      icon: <CheckCircle size={20} color="#10b981" />
+    };
+  } else if (stalenessResult.state === 'aging') {
+    stalenessConfig = {
+      borderColor: 'border-[#f59e0b]',
+      titleColor: 'text-[#f59e0b]',
+      subtitleColor: 'text-[#f59e0b]',
+      subtitleText: stalenessResult.days === 1 ? 'Checked Yesterday' : `Checked ${stalenessResult.days} days ago`,
+      icon: <AlertTriangle size={20} color="#f59e0b" />
+    };
+  } else if (stalenessResult.state === 'overdue') {
+    stalenessConfig = {
+      borderColor: 'border-[#ef4444]',
+      titleColor: 'text-[#ef4444]',
+      subtitleColor: 'text-[#ef4444]',
+      subtitleText: lastSnapshot ? (stalenessResult.days ? `Overdue (${stalenessResult.days} days)` : 'Overdue') : 'Not Checked Yet',
+      icon: <AlertCircle size={20} color="#ef4444" />
+    };
+  }
 
   return (
     <>
@@ -71,13 +111,13 @@ export default function MileageDashboardContainer() {
 
         <Pressable
           onPress={() => router.push(CHECKLIST_ROUTE)}
-          className="flex-row items-center justify-between rounded-2xl border border-[#1e2d33] bg-[#121B1E] p-5 active:opacity-70"
+          className={`flex-row items-center justify-between rounded-2xl border ${stalenessConfig.borderColor} bg-[#121B1E] p-5 active:opacity-70`}
         >
           <View>
-            <Text className="text-sm font-medium text-[#8A999E]">Pre-Trip Check</Text>
-            <Text className="text-base font-bold text-white">Run self-diagnostic</Text>
+            <Text className={`text-sm font-medium ${stalenessConfig.titleColor}`}>Pre-Trip Check</Text>
+            <Text className={`text-base font-bold ${stalenessConfig.subtitleColor}`}>{stalenessConfig.subtitleText}</Text>
           </View>
-          <ChevronRight size={20} color="#8A999E" />
+          {stalenessConfig.icon}
         </Pressable>
       </View>
     </ScrollView>
