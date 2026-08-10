@@ -125,6 +125,15 @@ Reusable toast notifications in `components/toast/`. Five variants: `success` (t
 - Consecutive toasts of the same variant are deduplicated (prevents spam).
 - Requires `ToastProvider` at the app root and `ToastContainer` rendered somewhere in the tree.
 
+### 8. Diagnostic Records
+Local persistence layer for diagnostic records in `features/diagnostics/`. A record is created on every checklist completion and stored in AsyncStorage, ready to be synced to the backend in a future sprint.
+
+- **Data model** (`types/diagnostic-record.ts`): `DiagnosticRecord` with `id`, `timestamp`, `checkedItemIds`, `wearGauges`, and an optional `timerSession` linked when a ride timer is active at check time. Field names/types follow the backend checklist schema conventions (camelCase, ISO `date-time` strings) so a future sync requires no restructuring.
+- **Service layer** (`services/diagnostic-record.service.ts`) is the single AsyncStorage access point — UI components never touch local storage directly. Exposes `saveDiagnosticRecord`, `loadDiagnosticRecords` (newest first), and `clearDiagnosticRecords`.
+- **React Query hooks** (`hooks/use-diagnostic-records.ts`): `useDiagnosticRecords` reads the ordered list; `useSaveDiagnosticRecord` writes and invalidates the cache.
+- **Legacy migration**: on first load, any Sprint 4 snapshot data stored under the old `diagnostic-history` key is converted into the new record format and the legacy key is removed (no breaking changes).
+- Unit tests in `src/__tests__/unit/diagnostic-record.service.test.ts`.
+
 ---
 
 ## 🚀 Getting Started

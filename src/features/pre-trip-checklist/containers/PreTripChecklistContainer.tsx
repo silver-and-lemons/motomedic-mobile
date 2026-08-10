@@ -12,8 +12,9 @@ import { useMileageStore } from '../../../store/mileage.store';
 import { useChecklistOnboardingStore } from '../../../store/checklist-onboarding.store';
 import { useTimerActions } from '../../timer/hooks/use-timer-actions';
 import { useTimerStore } from '../../timer/timer-store';
-import { useDiagnosticHistoryStore } from '../../../store/diagnostic-history.store';
+import { useSaveDiagnosticRecord } from '../../diagnostics/hooks/use-diagnostic-records';
 import { useMileage } from '../../mileage/hooks/use-mileage';
+import type { DiagnosticTimerSession } from '../../diagnostics/types/diagnostic-record';
 
 type PreTripChecklistContainerProps = {
   mode: PreTripChecklistMode;
@@ -43,7 +44,10 @@ export default function PreTripChecklistContainer({
   const skipOnboarding = useChecklistOnboardingStore((state) => state.skipOnboarding);
   const { handleStart: startRideTimer } = useTimerActions();
   const timerStatus = useTimerStore((state) => state.status);
-  const addSnapshot = useDiagnosticHistoryStore((state) => state.addSnapshot);
+  const timerRideId = useTimerStore((state) => state.rideId);
+  const timerRiderName = useTimerStore((state) => state.riderName);
+  const timerStartedAt = useTimerStore((state) => state.startedAt);
+  const { mutate: saveDiagnosticRecord } = useSaveDiagnosticRecord();
   const mileage = useMileage();
 
   useEffect(() => {
@@ -106,7 +110,7 @@ export default function PreTripChecklistContainer({
       setCheckedItemIds(currentCheckedIds);
     }
     
-    addSnapshot({
+    saveDiagnosticRecord({
       timestamp: new Date().toISOString(),
       checkedItemIds: currentCheckedIds,
       wearGauges: {
@@ -116,11 +120,25 @@ export default function PreTripChecklistContainer({
         lastServiceKm: mileage.lastServiceKm,
         kmToNextService: mileage.kmToNextService,
         serviceProgress: mileage.serviceProgress,
-      }
+      },
+      timerSession: buildTimerSession(),
     });
 
     markCompleted();
     router.push(CHECKLIST_STATUS_ROUTE);
+  }
+
+  function buildTimerSession(): DiagnosticTimerSession | null {
+    if (timerStatus !== 'running' && timerStatus !== 'paused') {
+      return null;
+    }
+    return {
+      rideId: timerRideId,
+      riderName: timerRiderName,
+      startTimestamp: new Date(timerStartedAt ?? Date.now()).toISOString(),
+      endTimestamp: null,
+      durationSeconds: null,
+    };
   }
 
   function handleSetOdometer(): void {
