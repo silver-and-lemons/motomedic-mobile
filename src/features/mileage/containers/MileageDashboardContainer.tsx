@@ -7,7 +7,7 @@ import RideCard from '../../timer/components/RideCard';
 import RideRecordings from '../../timer/components/RideRecordings';
 import { useMileage } from '../hooks/use-mileage';
 import { useMotorcycleProfileStore } from '../../../store/motorcycle-profile.store';
-import { useDiagnosticHistoryStore } from '../../../store/diagnostic-history.store';
+import { useDiagnosticRecords } from '../../diagnostics/hooks/use-diagnostic-records';
 import { getDiagnosticStaleness } from '../utils/staleness';
 import {
   VEHICLE_TYPE_LABELS,
@@ -23,10 +23,9 @@ export default function MileageDashboardContainer() {
   const { currentKm } = useMileage();
   const profile = useMotorcycleProfileStore((s) => s.profile);
   const [recordingsVisible, setRecordingsVisible] = useState(false);
-  const history = useDiagnosticHistoryStore((s) => s.history);
-  
-  const lastSnapshot = history.length > 0 ? history[history.length - 1] : null;
-  const stalenessResult = getDiagnosticStaleness(lastSnapshot?.timestamp ?? null);
+  const { data: records, isLoading: isHistoryLoading } = useDiagnosticRecords();
+
+  const lastRecord = records && records.length > 0 ? records[0] : null;
 
   let stalenessConfig = {
     borderColor: 'border-[#1e2d33]',
@@ -36,28 +35,41 @@ export default function MileageDashboardContainer() {
     icon: <ChevronRight size={20} color="#8A999E" />
   };
 
-  if (stalenessResult.state === 'fresh') {
-    stalenessConfig = {
-      borderColor: 'border-[#10b981]',
-      titleColor: 'text-[#10b981]',
-      subtitleColor: 'text-[#10b981]',
-      subtitleText: 'Checked Today',
-      icon: <CheckCircle size={20} color="#10b981" />
-    };
-  } else if (stalenessResult.state === 'aging') {
-    stalenessConfig = {
-      borderColor: 'border-[#f59e0b]',
-      titleColor: 'text-[#f59e0b]',
-      subtitleColor: 'text-[#f59e0b]',
-      subtitleText: stalenessResult.days === 1 ? 'Checked Yesterday' : `Checked ${stalenessResult.days} days ago`,
-      icon: <AlertTriangle size={20} color="#f59e0b" />
-    };
-  } else if (stalenessResult.state === 'overdue') {
+  if (isHistoryLoading) {
+    stalenessConfig = { ...stalenessConfig, subtitleText: 'Checking status...' };
+  } else if (lastRecord) {
+    const stalenessResult = getDiagnosticStaleness(lastRecord.timestamp);
+    if (stalenessResult.state === 'fresh') {
+      stalenessConfig = {
+        borderColor: 'border-[#10b981]',
+        titleColor: 'text-[#10b981]',
+        subtitleColor: 'text-[#10b981]',
+        subtitleText: 'Checked Today',
+        icon: <CheckCircle size={20} color="#10b981" />
+      };
+    } else if (stalenessResult.state === 'aging') {
+      stalenessConfig = {
+        borderColor: 'border-[#f59e0b]',
+        titleColor: 'text-[#f59e0b]',
+        subtitleColor: 'text-[#f59e0b]',
+        subtitleText: stalenessResult.days === 1 ? 'Checked Yesterday' : `Checked ${stalenessResult.days} days ago`,
+        icon: <AlertTriangle size={20} color="#f59e0b" />
+      };
+    } else if (stalenessResult.state === 'overdue') {
+      stalenessConfig = {
+        borderColor: 'border-[#ef4444]',
+        titleColor: 'text-[#ef4444]',
+        subtitleColor: 'text-[#ef4444]',
+        subtitleText: stalenessResult.days ? `Overdue (${stalenessResult.days} days)` : 'Overdue',
+        icon: <AlertCircle size={20} color="#ef4444" />
+      };
+    }
+  } else {
     stalenessConfig = {
       borderColor: 'border-[#ef4444]',
       titleColor: 'text-[#ef4444]',
       subtitleColor: 'text-[#ef4444]',
-      subtitleText: lastSnapshot ? (stalenessResult.days ? `Overdue (${stalenessResult.days} days)` : 'Overdue') : 'Not Checked Yet',
+      subtitleText: 'Not Checked Yet',
       icon: <AlertCircle size={20} color="#ef4444" />
     };
   }
