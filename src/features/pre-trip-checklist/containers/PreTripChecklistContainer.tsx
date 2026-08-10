@@ -12,6 +12,8 @@ import { useMileageStore } from '../../../store/mileage.store';
 import { useChecklistOnboardingStore } from '../../../store/checklist-onboarding.store';
 import { useTimerActions } from '../../timer/hooks/use-timer-actions';
 import { useTimerStore } from '../../timer/timer-store';
+import { useDiagnosticHistoryStore } from '../../../store/diagnostic-history.store';
+import { useMileage } from '../../mileage/hooks/use-mileage';
 
 type PreTripChecklistContainerProps = {
   mode: PreTripChecklistMode;
@@ -41,6 +43,8 @@ export default function PreTripChecklistContainer({
   const skipOnboarding = useChecklistOnboardingStore((state) => state.skipOnboarding);
   const { handleStart: startRideTimer } = useTimerActions();
   const timerStatus = useTimerStore((state) => state.status);
+  const addSnapshot = useDiagnosticHistoryStore((state) => state.addSnapshot);
+  const mileage = useMileage();
 
   useEffect(() => {
     if (mode === 'checklist' && !hasCompletedOnboarding && onboardingStep === 0) {
@@ -94,9 +98,27 @@ export default function PreTripChecklistContainer({
       return;
     }
 
+    const currentCheckedIds = checkedItemIds.length === 0 
+      ? getDefaultCheckedItemIds(sections) 
+      : checkedItemIds;
+
     if (checkedItemIds.length === 0) {
-      setCheckedItemIds(getDefaultCheckedItemIds(sections));
+      setCheckedItemIds(currentCheckedIds);
     }
+    
+    addSnapshot({
+      timestamp: new Date().toISOString(),
+      checkedItemIds: currentCheckedIds,
+      wearGauges: {
+        currentKm: mileage.currentKm,
+        cumulativeMileage: mileage.cumulativeMileage,
+        serviceIntervalKm: mileage.serviceIntervalKm,
+        lastServiceKm: mileage.lastServiceKm,
+        kmToNextService: mileage.kmToNextService,
+        serviceProgress: mileage.serviceProgress,
+      }
+    });
+
     markCompleted();
     router.push(CHECKLIST_STATUS_ROUTE);
   }
