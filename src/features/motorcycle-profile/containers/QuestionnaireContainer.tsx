@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { ArrowLeft, Ellipsis } from 'lucide-react-native';
 import { Button } from '../../../components/atoms/Button';
 import VehicleTypeStep from '../components/VehicleTypeStep';
@@ -29,15 +29,19 @@ const STEPS = [
   { key: 'policies', title: 'Policies', component: PoliciesAgreementStep },
 ] as const;
 
+const PRE_TRIP_CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
+
 export default function QuestionnaireContainer() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const savedProfile = useMotorcycleProfileStore((s) => s.profile);
+  const startAtPolicies = savedProfile !== null;
+  const [currentStep, setCurrentStep] = useState(startAtPolicies ? 5 : 0);
   const [showSummary, setShowSummary] = useState(false);
   const saveProfile = useMotorcycleProfileStore((s) => s.saveProfile);
   const mutation = useGenerateChecklist();
 
   const form = useForm<MotorcycleProfile>({
     resolver: zodResolver(motorcycleProfileSchema),
-    defaultValues: questionnaireDefaultValues,
+    defaultValues: startAtPolicies ? savedProfile! : questionnaireDefaultValues,
     mode: 'onChange',
   });
 
@@ -59,12 +63,14 @@ export default function QuestionnaireContainer() {
   const goBack = useCallback(() => {
     if (showSummary) {
       setShowSummary(false);
+    } else if (startAtPolicies) {
+      router.back();
     } else if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     } else {
       router.back();
     }
-  }, [currentStep, showSummary]);
+  }, [currentStep, showSummary, startAtPolicies]);
 
   const handleAgree = useCallback(() => {
     setShowSummary(false);
@@ -78,14 +84,14 @@ export default function QuestionnaireContainer() {
     saveProfile(profile);
     mutation.mutate(profile, {
       onSuccess: () => {
-        router.back();
+        router.replace(PRE_TRIP_CHECKLIST_ROUTE);
       },
       onError: () => {
         Alert.alert(
           'Connection Error',
           'Checklist could not be generated. Your profile was saved locally.',
         );
-        router.back();
+        router.replace(PRE_TRIP_CHECKLIST_ROUTE);
       },
     });
   }, [form, saveProfile, mutation]);
@@ -112,7 +118,7 @@ export default function QuestionnaireContainer() {
           </View>
 
           {/* Step Indicator */}
-          {!showSummary && (
+          {!showSummary && !startAtPolicies && (
             <View className="mb-6">
               <Text className="text-xs font-bold uppercase tracking-widest text-[#94a3b8] mb-3">
                 Step {currentStep + 1} of {STEPS.length}
