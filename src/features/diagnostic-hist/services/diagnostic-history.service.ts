@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DiagnosticRecord } from '../types/diagnostic-record';
 
-export const RECORDS_KEY = 'RECORDS_KEY';
+export const RECORDS_KEY = 'motomedic-diagnostic-records';
 
 export const diagnosticHistoryService = {
   /**
