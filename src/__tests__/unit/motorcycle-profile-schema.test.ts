@@ -1,14 +1,12 @@
 import { motorcycleProfileSchema, questionnaireDefaultValues } from '../../features/motorcycle-profile/types/motorcycle-profile';
 
 const validProfile = {
-  make: 'Honda',
-  model: 'CBR600RR',
-  year: 2020,
-  engineType: 'inline-four' as const,
-  displacementCc: 600,
-  customFeatures: ['led-lighting', 'aftermarket-exhaust'],
-  primaryUse: 'track' as const,
-  experienceLevel: 'advanced' as const,
+  vehicleType: 'sport-naked-big-bike' as const,
+  engineSizeCc: 600,
+  fuelType: 'fuel-injected' as const,
+  coolingType: 'liquid-cooled' as const,
+  bikeAge: 2020,
+  agreedToPolicies: true,
 };
 
 describe('motorcycleProfileSchema', () => {
@@ -17,140 +15,143 @@ describe('motorcycleProfileSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('passes with no custom features (optional field)', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, customFeatures: [] });
+  it('passes with boundary default values (valid base fields)', () => {
+    const result = motorcycleProfileSchema.safeParse({
+      ...questionnaireDefaultValues,
+      agreedToPolicies: true,
+    });
     expect(result.success).toBe(true);
   });
 
-  it('rejects default values (empty make/model are invalid)', () => {
-    const result = motorcycleProfileSchema.safeParse(questionnaireDefaultValues);
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects empty make', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, make: '' });
+  it('rejects missing vehicleType', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, vehicleType: undefined });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].path[0]).toBe('make');
+      expect(result.error.issues[0].path[0]).toBe('vehicleType');
     }
   });
 
-  it('rejects make exceeding 50 characters', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, make: 'A'.repeat(51) });
+  it('rejects invalid vehicleType', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, vehicleType: 'flying-car' });
     expect(result.success).toBe(false);
   });
 
-  it('rejects empty model', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, model: '' });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].path[0]).toBe('model');
-    }
-  });
-
-  it('rejects year before 1970', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, year: 1969 });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toMatch(/1970/);
-    }
-  });
-
-  it('rejects year beyond current year + 1', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, year: new Date().getFullYear() + 2 });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toMatch(/distant future/);
-    }
-  });
-
-  it('rejects non-integer year', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, year: 2020.5 });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toMatch(/whole number/);
-    }
-  });
-
-  it('accepts boundary year 1970', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, year: 1970 });
-    expect(result.success).toBe(true);
-  });
-
-  it('accepts boundary year current + 1', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, year: new Date().getFullYear() + 1 });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects invalid engineType', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineType: 'rotary' });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects displacement below 50', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, displacementCc: 49 });
+  it('rejects engineSizeCc below 50', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineSizeCc: 49 });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toMatch(/50cc/);
     }
   });
 
-  it('rejects displacement above 2500', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, displacementCc: 2501 });
+  it('rejects engineSizeCc above 2500', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineSizeCc: 2501 });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toMatch(/2500cc/);
     }
   });
 
-  it('accepts boundary displacement 50', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, displacementCc: 50 });
+  it('accepts boundary engineSizeCc 50', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineSizeCc: 50 });
     expect(result.success).toBe(true);
   });
 
-  it('accepts boundary displacement 2500', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, displacementCc: 2500 });
+  it('accepts boundary engineSizeCc 2500', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineSizeCc: 2500 });
     expect(result.success).toBe(true);
   });
 
-  it('rejects displacement non-integer', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, displacementCc: 600.5 });
+  it('rejects non-integer engineSizeCc', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineSizeCc: 600.5 });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toMatch(/expected int/);
+    }
+  });
+
+  it('rejects missing fuelType', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, fuelType: undefined });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects invalid fuelType', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, fuelType: 'diesel' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects missing coolingType', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, coolingType: undefined });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects invalid coolingType', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, coolingType: 'water' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects bikeAge before 1900', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, bikeAge: 1899 });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toMatch(/1900/);
+    }
+  });
+
+  it('rejects bikeAge beyond current year', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, bikeAge: new Date().getFullYear() + 1 });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toMatch(new RegExp(String(new Date().getFullYear())));
+    }
+  });
+
+  it('rejects non-integer bikeAge', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, bikeAge: 2020.5 });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toMatch(/whole number/);
     }
   });
 
-  it('rejects invalid primaryUse', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, primaryUse: 'flying' });
-    expect(result.success).toBe(false);
+  it('accepts boundary bikeAge 1900', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, bikeAge: 1900 });
+    expect(result.success).toBe(true);
   });
 
-  it('rejects invalid experienceLevel', () => {
-    const result = motorcycleProfileSchema.safeParse({ ...validProfile, experienceLevel: 'god' });
-    expect(result.success).toBe(false);
+  it('accepts boundary bikeAge current year', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, bikeAge: new Date().getFullYear() });
+    expect(result.success).toBe(true);
   });
 
-  it('accepts all valid engineType values', () => {
-    const types = ['single-cylinder', 'parallel-twin', 'v-twin', 'inline-three', 'inline-four', 'inline-six', 'electric', 'other'] as const;
-    for (const engineType of types) {
-      const result = motorcycleProfileSchema.safeParse({ ...validProfile, engineType });
+  it('rejects not agreeing to policies', () => {
+    const result = motorcycleProfileSchema.safeParse({ ...validProfile, agreedToPolicies: false });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].path[0]).toBe('agreedToPolicies');
+    }
+  });
+
+  it('accepts all valid vehicleType values', () => {
+    const types = ['automatic-scooter', 'underbone', 'sport-naked-big-bike'] as const;
+    for (const vehicleType of types) {
+      const result = motorcycleProfileSchema.safeParse({ ...validProfile, vehicleType });
       expect(result.success).toBe(true);
     }
   });
 
-  it('accepts all valid primaryUse values', () => {
-    const uses = ['commuting', 'touring', 'track', 'offroad', 'cruising', 'other'] as const;
-    for (const primaryUse of uses) {
-      const result = motorcycleProfileSchema.safeParse({ ...validProfile, primaryUse });
+  it('accepts all valid fuelType values', () => {
+    const types = ['carbureted', 'fuel-injected'] as const;
+    for (const fuelType of types) {
+      const result = motorcycleProfileSchema.safeParse({ ...validProfile, fuelType });
       expect(result.success).toBe(true);
     }
   });
 
-  it('accepts all valid experienceLevel values', () => {
-    const levels = ['beginner', 'intermediate', 'advanced', 'expert'] as const;
-    for (const experienceLevel of levels) {
-      const result = motorcycleProfileSchema.safeParse({ ...validProfile, experienceLevel });
+  it('accepts all valid coolingType values', () => {
+    const types = ['air-cooled', 'liquid-cooled'] as const;
+    for (const coolingType of types) {
+      const result = motorcycleProfileSchema.safeParse({ ...validProfile, coolingType });
       expect(result.success).toBe(true);
     }
   });

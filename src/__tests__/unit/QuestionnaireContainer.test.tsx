@@ -1,31 +1,71 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import QuestionnaireContainer from '../../features/motorcycle-profile/containers/QuestionnaireContainer';
+import type { MotorcycleProfile } from '../../features/motorcycle-profile/types/motorcycle-profile';
 
 const mockSaveProfile = jest.fn();
-const mockRouterBack = jest.fn();
+const mockMutate = jest.fn();
+
+type MotorcycleStoreState = {
+  profile: MotorcycleProfile | null;
+  isComplete: boolean;
+  saveProfile: typeof mockSaveProfile;
+  clearProfile: () => void;
+};
 
 jest.mock('../../store/motorcycle-profile.store', () => ({
-  useMotorcycleProfileStore: (selector: any) =>
-    selector({ saveProfile: mockSaveProfile, profile: null, isComplete: false, clearProfile: jest.fn() }),
+  useMotorcycleProfileStore: (
+    selector: (state: MotorcycleStoreState) => unknown
+  ) =>
+    selector({
+      profile: null,
+      isComplete: false,
+      saveProfile: mockSaveProfile,
+      clearProfile: jest.fn(),
+    }),
 }));
 
-jest.mock('expo-router', () => ({
-  router: { back: (...args: any[]) => mockRouterBack(...args) },
+jest.mock('../../features/motorcycle-profile/hooks/use-checklist', () => ({
+  useGenerateChecklist: () => ({
+    isPending: false,
+    mutate: mockMutate,
+  }),
 }));
 
-function fillStep1() {
-  const makeInput = screen.getByPlaceholderText('e.g. Honda, Yamaha, Kawasaki');
-  const modelInput = screen.getByPlaceholderText('e.g. CBR600RR, Ninja 400');
-  const yearInput = screen.getByPlaceholderText('e.g. 2020');
-  fireEvent.changeText(makeInput, 'Honda');
-  fireEvent.changeText(modelInput, 'CBR600RR');
-  fireEvent.changeText(yearInput, '2020');
+const POLICY_SECTION_TITLES = [
+  'Scope of Services',
+  'User Accounts',
+  'User Conduct',
+  'Intellectual Property',
+  'Limitation of Liability',
+  'Privacy Policy',
+];
+
+async function proceedThroughSteps(): Promise<void> {
+  await waitFor(() => expect(screen.getByText('Step 1 of 6')).toBeTruthy());
+  for (let step = 1; step <= 4; step++) {
+    fireEvent.press(screen.getByText('PROCEED >'));
+    await waitFor(() =>
+      expect(screen.getByText(`Step ${step + 1} of 6`)).toBeTruthy()
+    );
+  }
 }
 
-function fillStep2() {
-  const dispInput = screen.getByPlaceholderText('e.g. 600');
-  fireEvent.changeText(dispInput, '600');
+async function reachPoliciesStep(): Promise<void> {
+  await proceedThroughSteps();
+  fireEvent.press(screen.getByText('PROCEED >'));
+  await waitFor(() =>
+    expect(screen.getByText('Please check the following before confirming:')).toBeTruthy()
+  );
+  fireEvent.press(screen.getByText('I Agree'));
+  await waitFor(() => expect(screen.getByText('Step 6 of 6')).toBeTruthy());
+}
+
+async function agreeToAllPolicies(): Promise<void> {
+  for (const title of POLICY_SECTION_TITLES) {
+    fireEvent.press(screen.getByText(title));
+  }
 }
 
 describe('QuestionnaireContainer', () => {
@@ -33,186 +73,70 @@ describe('QuestionnaireContainer', () => {
     jest.clearAllMocks();
   });
 
-  it('renders step 1 of 4 initially', () => {
+  it('renders step 1 of 6 initially', () => {
     render(<QuestionnaireContainer />);
-    expect(screen.getByText('Step 1 of 4')).toBeTruthy();
-    expect(screen.getByText('25%')).toBeTruthy();
-    expect(screen.getByText('Basic Info')).toBeTruthy();
+    expect(screen.getByText('Step 1 of 6')).toBeTruthy();
+    expect(screen.getByText('Automatic Scooter')).toBeTruthy();
+    expect(screen.getByText('Underbone')).toBeTruthy();
+    expect(screen.getByText('Sport / Naked / Big Bike')).toBeTruthy();
   });
 
   it('does not show back button on step 1', () => {
     render(<QuestionnaireContainer />);
-    expect(screen.queryByText('Back')).toBeNull();
+    expect(screen.queryByText('< GO BACK')).toBeNull();
   });
 
-  it('shows "Next" button on step 1', () => {
+  it('shows only a single PROCEED button on step 1', () => {
     render(<QuestionnaireContainer />);
-    expect(screen.getByText('Next')).toBeTruthy();
+    expect(screen.getByText('PROCEED >')).toBeTruthy();
+    expect(screen.queryByText('< GO BACK')).toBeNull();
   });
 
-  it('renders Make, Model, Year inputs on step 1', () => {
+  it('advances through all 6 steps', async () => {
     render(<QuestionnaireContainer />);
-    expect(screen.getByText('Make')).toBeTruthy();
-    expect(screen.getByText('Model')).toBeTruthy();
-    expect(screen.getByText('Year')).toBeTruthy();
+    await proceedThroughSteps();
+    expect(screen.getByText('Step 5 of 6')).toBeTruthy();
   });
 
-  it('stays on step 1 when Next pressed with empty fields', () => {
+  it('shows the summary overlay after the bike age step', async () => {
     render(<QuestionnaireContainer />);
-    fireEvent.press(screen.getByText('Next'));
-    expect(screen.getByText('Step 1 of 4')).toBeTruthy();
-    expect(screen.getByText('Basic Info')).toBeTruthy();
+    await proceedThroughSteps();
+    fireEvent.press(screen.getByText('PROCEED >'));
+    await waitFor(() =>
+      expect(screen.getByText('Please check the following before confirming:')).toBeTruthy()
+    );
+    expect(screen.getByText('I Agree')).toBeTruthy();
+    expect(screen.getByText('Decline')).toBeTruthy();
   });
 
-  it('advances to step 2 when Next pressed with valid step 1 data', async () => {
+  it('does not confirm when policies are not agreed', async () => {
     render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
+    await reachPoliciesStep();
+    fireEvent.press(screen.getByText('CONFIRM'));
+    expect(mockSaveProfile).not.toHaveBeenCalled();
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
 
-    await waitFor(() => {
-      expect(screen.getByText('Step 2 of 4')).toBeTruthy();
-      expect(screen.getByText('Engine')).toBeTruthy();
+  it('confirms profile, saves, and navigates to pre-trip checklist', async () => {
+    mockMutate.mockImplementation((_profile, options) => {
+      options.onSuccess();
     });
-  });
-
-  it('shows Back button on step 2', async () => {
     render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
+    await reachPoliciesStep();
+    await agreeToAllPolicies();
+    fireEvent.press(screen.getByText('CONFIRM'));
 
-    await waitFor(() => {
-      expect(screen.getByText('Back')).toBeTruthy();
-    });
-  });
-
-  it('goes back to step 1 when Back pressed on step 2', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Engine')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Back'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Basic Info')).toBeTruthy();
-      expect(screen.queryByText('Back')).toBeNull();
-    });
-  });
-
-  it('data persists when navigating back then forward', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Engine')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Back'));
-    await waitFor(() => expect(screen.getByText('Basic Info')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => {
-      expect(screen.getByText('Engine')).toBeTruthy();
-    });
-  });
-
-  it('progress bar shows 50% on step 2', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-
-    await waitFor(() => {
-      expect(screen.getByText('50%')).toBeTruthy();
-    });
-  });
-
-  it('shows "Review" button text on step 4', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Engine')).toBeTruthy());
-
-    fillStep2();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Custom Features')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Rider Profile')).toBeTruthy());
-
-    expect(screen.getByText('Review')).toBeTruthy();
-  });
-
-  it('shows ProfileSummary after completing all 4 steps', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Engine')).toBeTruthy());
-
-    fillStep2();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Custom Features')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Rider Profile')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Review'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Motorcycle Details')).toBeTruthy();
-      expect(screen.getByText('Confirm Profile')).toBeTruthy();
-      expect(screen.getByText('Edit')).toBeTruthy();
-    });
-  });
-
-  it('Confirm Profile saves to Zustand store and navigates back', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Engine')).toBeTruthy());
-
-    fillStep2();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Custom Features')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Rider Profile')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Review'));
-    await waitFor(() => expect(screen.getByText('Confirm Profile')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Confirm Profile'));
-
-    expect(mockSaveProfile).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockSaveProfile).toHaveBeenCalledTimes(1));
     expect(mockSaveProfile).toHaveBeenCalledWith(
       expect.objectContaining({
-        make: 'Honda',
-        model: 'CBR600RR',
-        year: 2020,
-        displacementCc: 600,
+        vehicleType: 'automatic-scooter',
+        engineSizeCc: 110,
+        fuelType: 'carbureted',
+        coolingType: 'air-cooled',
+        agreedToPolicies: true,
       })
     );
-    expect(mockRouterBack).toHaveBeenCalledTimes(1);
-  });
-
-  it('Edit returns from summary back to step view', async () => {
-    render(<QuestionnaireContainer />);
-    fillStep1();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Engine')).toBeTruthy());
-
-    fillStep2();
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Custom Features')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Next'));
-    await waitFor(() => expect(screen.getByText('Rider Profile')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Review'));
-    await waitFor(() => expect(screen.getByText('Motorcycle Details')).toBeTruthy());
-
-    fireEvent.press(screen.getByText('Edit'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Step 4 of 4')).toBeTruthy();
-      expect(screen.getByText('Rider Profile')).toBeTruthy();
-    });
+    await waitFor(() => expect(mockMutate).toHaveBeenCalledTimes(1));
+    expect(router.replace).toHaveBeenCalledWith('/pre-trip-checklist');
   });
 });
