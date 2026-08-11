@@ -1,3 +1,4 @@
+import { View } from 'react-native';
 import { ArrowLeft, MoreHorizontal } from 'lucide-react-native';
 import { Button } from '../../../../components/atoms/Button';
 import ChecklistHeaderCard from '../molecules/ChecklistHeaderCard';
@@ -10,6 +11,8 @@ import type {
   PreTripChecklistSection as PreTripChecklistSectionType,
   PreTripChecklistStats,
 } from '../../types/pre-trip-checklist';
+import type { ChecklistOnboardingStepId, OnboardingTargetLayout } from '../../types/checklist-onboarding';
+import type { TimerStatus } from '../../../timer/types';
 
 type PreTripChecklistContentProps = {
   sections: PreTripChecklistSectionType[];
@@ -24,6 +27,11 @@ type PreTripChecklistContentProps = {
   onRunDiagnostic: () => void;
   onToggleItem: (itemId: string) => void;
   onToggleGuide: (itemId: string) => void;
+  onSetOdometer?: () => void;
+  onGoToDashboard?: () => void;
+  onStartRide?: () => void;
+  timerStatus?: TimerStatus;
+  onTargetLayout?: (stepId: ChecklistOnboardingStepId, layout: OnboardingTargetLayout) => void;
 };
 
 export default function PreTripChecklistContent({
@@ -39,8 +47,48 @@ export default function PreTripChecklistContent({
   onRunDiagnostic,
   onToggleItem,
   onToggleGuide,
+  onSetOdometer,
+  onGoToDashboard,
+  onStartRide,
+  timerStatus,
+  onTargetLayout,
 }: PreTripChecklistContentProps) {
   const isStatusMode = mode === 'status';
+
+  function handleMeasure(stepId: ChecklistOnboardingStepId) {
+    return (ref: View | null) => {
+      if (!ref || !onTargetLayout) return;
+      setTimeout(() => {
+        ref.measure((_x, _y, _w, h, _pageX, pageY) => {
+          if (typeof pageY === 'number' && typeof h === 'number') {
+            onTargetLayout(stepId, { y: pageY, height: h });
+          }
+        });
+      }, 300);
+    };
+  }
+
+  const ITEM_ID_TO_STEP_ID: Record<string, ChecklistOnboardingStepId> = {
+    'tyre-pressure-condition': 'tyre-pressure',
+    'engine-oil-level': 'engine-oil',
+    'front-rear-brakes': 'front-rear-brakes',
+    'lights': 'lights',
+    'fuel-level': 'fuel-level',
+  };
+
+  function handleRowLayout(itemId: string, layout: OnboardingTargetLayout) {
+    const stepId = ITEM_ID_TO_STEP_ID[itemId];
+    if (stepId) {
+      onTargetLayout?.(stepId, layout);
+    }
+  }
+
+  function handleItemCheckboxLayout(itemId: string, layout: OnboardingTargetLayout) {
+    if (itemId === 'tyre-pressure-condition') {
+      onTargetLayout?.('log-status-good', layout);
+      onTargetLayout?.('log-status-bad', layout);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -70,18 +118,38 @@ export default function PreTripChecklistContent({
         <ChecklistIconButton icon={MoreHorizontal} accessibilityLabel="Checklist options" />
       </ChecklistSurface>
 
-      <ChecklistHeaderCard stats={stats} />
+      <View ref={handleMeasure('health-score')} collapsable={false}>
+        <ChecklistHeaderCard
+          stats={stats}
+          onHealthScoreLayout={(layout) => onTargetLayout?.('health-score', layout)}
+          onStatusSummaryLayout={(layout) => onTargetLayout?.('status-summary', layout)}
+        />
+      </View>
 
       {sections.map((section) => (
-        <ChecklistSection
-          key={section.id}
-          section={section}
-          checkedItemIds={checkedItemIds}
-          mode={mode}
-          expandedGuideItemId={expandedGuideItemId}
-          onToggleItem={onToggleItem}
-          onToggleGuide={onToggleGuide}
-        />
+        <View key={section.id} collapsable={false}>
+          <ChecklistSection
+            section={section}
+            checkedItemIds={checkedItemIds}
+            mode={mode}
+            expandedGuideItemId={expandedGuideItemId}
+            onToggleItem={onToggleItem}
+            onToggleGuide={onToggleGuide}
+            onFirstItemLayout={section.id === 'bike-health'
+              ? (layout) => {
+                  onTargetLayout?.('log-status-good', layout);
+                  onTargetLayout?.('log-status-bad', layout);
+                }
+              : undefined
+            }
+            onSectionHeaderLayout={section.id === 'additional'
+              ? (layout) => onTargetLayout?.('additional-checklist', layout)
+              : undefined
+            }
+            onRowLayout={handleRowLayout}
+            onItemCheckboxLayout={handleItemCheckboxLayout}
+          />
+        </View>
       ))}
 
       {!isStatusMode && !canProceedToDiagnostic && (
@@ -91,13 +159,48 @@ export default function PreTripChecklistContent({
       )}
 
       {(isStatusMode || canProceedToDiagnostic) && (
+        <View ref={isStatusMode ? undefined : handleMeasure('get-diagnosis')}>
+          <Button
+            variant="primary"
+            className="mt-2 h-14 rounded-md bg-[#21f4b7]"
+            textClassName="text-xs font-black text-[#061314]"
+            onPress={onRunDiagnostic}
+          >
+            {isStatusMode ? 'RE-RUN SELF DIAGNOSTIC' : 'RUN SELF DIAGNOSTIC'}
+          </Button>
+        </View>
+      )}
+
+      {isStatusMode && onSetOdometer && (
+        <Button
+          variant="outline"
+          className="mt-2 h-14 rounded-md border-[#21f4b7]"
+          textClassName="text-xs font-black text-[#21f4b7]"
+          onPress={onSetOdometer}
+        >
+          SET ODOMETER
+        </Button>
+      )}
+
+      {isStatusMode && onGoToDashboard && (
         <Button
           variant="primary"
-          className="mt-2 h-14 rounded-md bg-[#21f4b7]"
-          textClassName="text-xs font-black text-[#061314]"
-          onPress={onRunDiagnostic}
+          className="mt-2 h-14 rounded-md bg-[#0ea5e9]"
+          textClassName="text-xs font-black text-white"
+          onPress={onGoToDashboard}
         >
-          {isStatusMode ? 'GO TO DASHBOARD' : 'RUN SELF DIAGNOSTIC'}
+          GO TO DASHBOARD
+        </Button>
+      )}
+
+      {isStatusMode && onStartRide && timerStatus === 'idle' && (
+        <Button
+          variant="primary"
+          className="mt-2 h-14 rounded-md bg-[#00d4aa]"
+          textClassName="text-xs font-black text-[#061314]"
+          onPress={onStartRide}
+        >
+          START RIDE
         </Button>
       )}
     </>

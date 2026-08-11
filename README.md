@@ -100,6 +100,40 @@ The `app/` directory serves *only* as a routing layer. Screens should remain ext
 ### 4. Data Fetching
 Always use TanStack Query (`useQuery`, `useMutation`) wrapping native `fetch` inside the `/services/` folder. Do not use raw `useEffect` + `fetch` inside components.
 
+### 5. Client State (Zustand)
+Use Zustand for UI-only state. **Never** store server data in Zustand — use TanStack Query for that.
+
+**Persistence**: Use `zustand/middleware` persist with `AsyncStorage` adapter for state that must survive app restarts (e.g. ride timer sessions). Non-persisted stores reset on app launch.
+
+### 6. Timer Feature
+Timer lives in `features/timer/` with a Zustand store (`timer-store.ts`) managing 4 states: `idle`, `running`, `paused`, `stopped`.
+
+- **Start**: Sets `startedAt` timestamp, transitions to `running`.
+- **Pause**: Records `pausedAt` timestamp, transitions to `paused`.
+- **Resume**: Calculates pause duration, adds to `totalPausedMs`, transitions back to `running`.
+- **Stop**: Computes active elapsed time (`stoppedAt - startedAt - totalPausedMs`), saves session to AsyncStorage via `timer-storage.ts`, transitions to `stopped`. After 5s the store auto-resets to `idle`.
+- **Elapsed time display**: `useElapsedTime()` hook polls every 1s during `running`, returns `{ formatted: "HH:MM:SS", seconds: number }`. Paused duration is excluded.
+
+**Persistent overlay**: `TimerRunningToast` renders at the app root inside `AppProviders`, so it persists across all screens. It slides in from the top, shows a status bar (green/blue/red), live time, and pause/resume/stop buttons.
+
+**Dashboard integration**: `RideCard` on the mileage dashboard provides start/pause/resume/stop controls. `RideRecordings` modal lists all past sessions from AsyncStorage with totals and a clear-all option.
+
+### 7. Toast System
+Reusable toast notifications in `components/toast/`. Five variants: `success` (teal), `warning` (amber), `error` (red + optional Retry), `info` (blue), `running` (persistent — used by timer).
+
+- Stacked auto-dismiss toasts anchored at the **bottom** of the screen.
+- Consecutive toasts of the same variant are deduplicated (prevents spam).
+- Requires `ToastProvider` at the app root and `ToastContainer` rendered somewhere in the tree.
+
+### 8. Diagnostic Records
+Local persistence layer for diagnostic records in `features/diagnostics/`. A record is created on every checklist completion and stored in AsyncStorage, ready to be synced to the backend in a future sprint.
+
+- **Data model** (`types/diagnostic-record.ts`): `DiagnosticRecord` with `id`, `timestamp`, `checkedItemIds`, `wearGauges`, and an optional `timerSession` linked when a ride timer is active at check time. Field names/types follow the backend checklist schema conventions (camelCase, ISO `date-time` strings) so a future sync requires no restructuring.
+- **Service layer** (`services/diagnostic-record.service.ts`) is the single AsyncStorage access point — UI components never touch local storage directly. Exposes `saveDiagnosticRecord`, `loadDiagnosticRecords` (newest first), and `clearDiagnosticRecords`.
+- **React Query hooks** (`hooks/use-diagnostic-records.ts`): `useDiagnosticRecords` reads the ordered list; `useSaveDiagnosticRecord` writes and invalidates the cache.
+- **Legacy migration**: on first load, any Sprint 4 snapshot data stored under the old `diagnostic-history` key is converted into the new record format and the legacy key is removed (no breaking changes).
+- Unit tests in `src/__tests__/unit/diagnostic-record.service.test.ts`.
+
 ---
 
 ## 🚀 Getting Started
