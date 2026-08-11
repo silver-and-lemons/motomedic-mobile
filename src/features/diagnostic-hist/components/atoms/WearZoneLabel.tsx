@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { WearZone } from '../../types/diagnostic-record';
 
 interface WearZoneLabelProps {
@@ -18,8 +19,8 @@ export const WearZoneLabel: React.FC<WearZoneLabelProps> = ({ progress }) => {
   }
 
   return (
-    <span style={{ color, fontWeight: 'bold', fontSize: '16px' }}>
+    <Text style={{ color, fontWeight: '700', fontSize: 16 }}>
       {label}
-    </span>
+    </Text>
   );
 };
