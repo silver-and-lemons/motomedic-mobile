@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import { DiagnosticHistoryList } from './organisms/DiagnosticHistoryList';
+import { Pressable, Text, View } from 'react-native';
 import type { DiagnosticRecord } from '../types/diagnostic-record';
+import { DiagnosticHistoryList } from './organisms/DiagnosticHistoryList';
 
 type DiagnosticHistoryProps = {
   records: DiagnosticRecord[];
@@ -29,19 +28,16 @@ export default function DiagnosticHistory({
       </View>
 
       {/* Main Content View Container */}
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 34 }}
-        contentInsetAdjustmentBehavior="automatic"
-        showsVerticalScrollIndicator={false}
-      >
-        <Text className="text-white text-3xl font-extrabold tracking-wide mb-6">
-          DIAGNOSTIC HISTORY
-        </Text>
+      <View className="flex-1">
+        <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 34 }}>
+          <Text className="text-white text-3xl font-extrabold tracking-wide mb-6">
+            DIAGNOSTIC HISTORY
+          </Text>
 
-        {/* Passes organized presentation items into the performance list layer */}
-        <DiagnosticHistoryList records={records} />
-      </ScrollView>
+          {/* Passes organized presentation items into the performance list layer */}
+          <DiagnosticHistoryList records={records} />
+        </View>
+      </View>
     </View>
   );
 }
