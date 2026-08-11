@@ -33,6 +33,7 @@ type PreTripChecklistProps = {
   onToggleGuide: (itemId: string) => void;
   onSetOdometer?: () => void;
   onGoToDashboard?: () => void;
+  onViewHistory?: () => void;
   onStartRide?: () => void;
   timerStatus?: TimerStatus;
 };
@@ -55,6 +56,7 @@ export default function PreTripChecklist({
   onToggleGuide,
   onSetOdometer,
   onGoToDashboard,
+  onViewHistory,
   onStartRide,
   timerStatus,
 }: PreTripChecklistProps) {
@@ -97,6 +99,7 @@ export default function PreTripChecklist({
           onToggleGuide={onToggleGuide}
           onSetOdometer={onSetOdometer}
           onGoToDashboard={onGoToDashboard}
+          onViewHistory={onViewHistory}
           onStartRide={onStartRide}
           timerStatus={timerStatus}
           onTargetLayout={handleTargetLayout}

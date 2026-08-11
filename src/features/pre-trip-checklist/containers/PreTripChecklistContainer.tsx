@@ -24,6 +24,7 @@ const CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
 const CHECKLIST_STATUS_ROUTE = '/pre-trip-checklist-status' as Href;
 const ODOMETER_INPUT_ROUTE = '/odometer-input' as Href;
 const DASHBOARD_ROUTE = '/dashboard' as Href;
+const DIAGNOSTIC_HIST_ROUTE = '/diagnostic-hist' as Href;
 
 export default function PreTripChecklistContainer({
   mode,
@@ -149,6 +150,10 @@ export default function PreTripChecklistContainer({
     router.push(DASHBOARD_ROUTE);
   }
 
+  function handleViewHistory(): void {
+    router.push(DIAGNOSTIC_HIST_ROUTE);
+  }
+
   function handleStartRide(): void {
     startRideTimer();
     router.push(DASHBOARD_ROUTE);
@@ -173,6 +178,7 @@ export default function PreTripChecklistContainer({
       onToggleGuide={handleToggleGuide}
       onSetOdometer={isMileageComplete ? undefined : handleSetOdometer}
       onGoToDashboard={handleGoToDashboard}
+      onViewHistory={handleViewHistory}
       onStartRide={handleStartRide}
       timerStatus={timerStatus}
     />

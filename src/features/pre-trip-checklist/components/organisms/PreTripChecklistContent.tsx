@@ -29,6 +29,7 @@ type PreTripChecklistContentProps = {
   onToggleGuide: (itemId: string) => void;
   onSetOdometer?: () => void;
   onGoToDashboard?: () => void;
+  onViewHistory?: () => void;
   onStartRide?: () => void;
   timerStatus?: TimerStatus;
   onTargetLayout?: (stepId: ChecklistOnboardingStepId, layout: OnboardingTargetLayout) => void;
@@ -49,6 +50,7 @@ export default function PreTripChecklistContent({
   onToggleGuide,
   onSetOdometer,
   onGoToDashboard,
+  onViewHistory,
   onStartRide,
   timerStatus,
   onTargetLayout,
@@ -190,6 +192,17 @@ export default function PreTripChecklistContent({
           onPress={onGoToDashboard}
         >
           GO TO DASHBOARD
+        </Button>
+      )}
+
+      {isStatusMode && onViewHistory && (
+        <Button
+          variant="outline"
+          className="mt-2 h-14 rounded-md border-[#21f4b7]"
+          textClassName="text-xs font-black text-[#21f4b7]"
+          onPress={onViewHistory}
+        >
+          VIEW HISTORY
         </Button>
       )}
 

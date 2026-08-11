@@ -18,6 +18,7 @@ import {
 const ODOMETER_ROUTE = '/odometer-input' as Href;
 const SETTINGS_ROUTE = '/settings' as Href;
 const CHECKLIST_ROUTE = '/pre-trip-checklist' as Href;
+const DIAGNOSTIC_HIST_ROUTE = '/diagnostic-hist' as Href;
 
 export default function MileageDashboardContainer() {
   const { currentKm } = useMileage();
@@ -130,6 +131,14 @@ export default function MileageDashboardContainer() {
             <Text className={`text-base font-bold ${stalenessConfig.subtitleColor}`}>{stalenessConfig.subtitleText}</Text>
           </View>
           {stalenessConfig.icon}
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push(DIAGNOSTIC_HIST_ROUTE)}
+          className="flex-row items-center justify-between rounded-2xl border border-[#1e2d33] bg-[#121B1E] p-5 active:opacity-70"
+        >
+          <Text className="text-sm font-medium text-[#8A999E]">Diagnostic History</Text>
+          <ChevronRight size={20} color="#8A999E" />
         </Pressable>
       </View>
     </ScrollView>
