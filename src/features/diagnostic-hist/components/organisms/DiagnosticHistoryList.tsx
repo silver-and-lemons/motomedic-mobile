@@ -1,60 +1,58 @@
 import React from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { DiagnosticRecord } from '../../types/diagnostic-record';
-import { HistoryRow } from '../molecules/HistoryRow';
 import { EmptyHistoryState } from '../molecules/EmptyHistoryState';
+import { HistoryRow } from '../molecules/HistoryRow';
 
 interface DiagnosticHistoryListProps {
   records: DiagnosticRecord[];
 }
 
 export const DiagnosticHistoryList: React.FC<DiagnosticHistoryListProps> = ({ records }) => {
-  if (records.length === 0) {
-    return <EmptyHistoryState />;
-  }
+  if (records.length === 0) return <EmptyHistoryState />;
 
   return (
-    <div style={styles.listContainer}>
-      {/* Table Subheaders */}
-      <div style={styles.headerRow}>
-        <span style={styles.headerText}>Date | Time</span>
-        <span style={styles.headerText}>No. Items Checked</span>
-        <span style={styles.headerText}>Wear gauge value</span>
-      </div>
+    <View style={styles.listContainer}>
+      <View style={styles.headerRow}>
+        <Text style={styles.headerText}>Date | Time</Text>
+        <Text style={styles.headerText}>No. Items Checked</Text>
+        <Text style={styles.headerText}>Wear gauge value</Text>
+      </View>
 
-      {/* Optimized rendering context for performance scales */}
-      <div style={styles.scrollArea}>
-        {records.map((record) => (
-          <HistoryRow key={record.id} record={record} />
-        ))}
-      </div>
-    </div>
+      <FlatList
+        data={records}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <HistoryRow record={item} />}
+        contentContainerStyle={styles.scrollArea}
+        initialNumToRender={10}
+        windowSize={11}
+        removeClippedSubviews
+      />
+    </View>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   listContainer: {
-    display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     width: '100%',
   },
   headerRow: {
-    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: '12px',
-    borderBottom: '1px solid #34495E',
-    marginTop: '24px',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#34495E',
+    marginTop: 24,
   },
   headerText: {
     flex: 1,
     color: '#E5E9EB',
-    fontWeight: 'bold' as const,
-    fontSize: '16px',
+    fontWeight: '700',
+    fontSize: 16,
   },
   scrollArea: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    overflowY: 'auto' as const,
-    maxHeight: 'calc(100vh - 220px)', // Preserves performance/viewport optimization
-    WebkitOverflowScrolling: 'touch' as const,
+    paddingTop: 8,
+    paddingBottom: 34,
   },
-};
+});
