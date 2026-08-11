@@ -5,7 +5,7 @@ export default function AppLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/sign-in" />;
+    return <Redirect href="/dashboard" />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;
