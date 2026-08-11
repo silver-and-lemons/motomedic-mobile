@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import BikeCatalogueContainer from '../../features/bike-catalogue/containers/BikeCatalogueContainer';
 
 const mockSaveProfile = jest.fn();
-const mockMutate = jest.fn();
 
 type MotorcycleStoreState = {
   saveProfile: typeof mockSaveProfile;
@@ -14,13 +13,6 @@ jest.mock('../../store/motorcycle-profile.store', () => ({
   useMotorcycleProfileStore: (
     selector: (state: MotorcycleStoreState) => unknown
   ) => selector({ saveProfile: mockSaveProfile }),
-}));
-
-jest.mock('../../features/motorcycle-profile/hooks/use-checklist', () => ({
-  useGenerateChecklist: () => ({
-    isPending: false,
-    mutate: mockMutate,
-  }),
 }));
 
 jest.mock('../../features/bike-catalogue/hooks/use-bike-catalogue', () => ({
@@ -67,10 +59,7 @@ describe('BikeCatalogueContainer', () => {
     });
   });
 
-  it('saves the selected bike and generates a checklist', () => {
-    mockMutate.mockImplementation((_profile, options) => {
-      options.onSuccess();
-    });
+  it('saves the selected bike and routes to the questionnaire', () => {
     render(<BikeCatalogueContainer />);
 
     fireEvent.press(screen.getByText('Honda ADV 160'));
@@ -83,8 +72,7 @@ describe('BikeCatalogueContainer', () => {
         fuelType: 'fuel-injected',
       })
     );
-    expect(mockMutate).toHaveBeenCalledTimes(1);
-    expect(router.replace).toHaveBeenCalledWith('/pre-trip-checklist');
+    expect(router.push).toHaveBeenCalledWith('/questionnaire');
   });
 
   it('routes fallback riders to the questionnaire', () => {
