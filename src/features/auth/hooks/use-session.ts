@@ -78,17 +78,21 @@ export function useSession() {
     restoreSession();
 
     intervalRef.current = setInterval(async () => {
-      const tokens = await getTokens();
-      if (!tokens) return;
+      try {
+        const tokens = await getTokens();
+        if (!tokens) return;
 
-      if (shouldRefreshToken(tokens)) {
-        const refreshed = await attemptRefresh(tokens.refreshToken);
-        if (refreshed) {
-          updateTokens(refreshed);
-        } else {
-          await clearTokens().catch(() => {});
-          clearSession();
+        if (shouldRefreshToken(tokens)) {
+          const refreshed = await attemptRefresh(tokens.refreshToken);
+          if (refreshed) {
+            updateTokens(refreshed);
+          } else {
+            await clearTokens().catch(() => {});
+            clearSession();
+          }
         }
+      } catch {
+        // SecureStore unavailable or transient error — skip this cycle
       }
     }, REFRESH_INTERVAL_MS);
 
