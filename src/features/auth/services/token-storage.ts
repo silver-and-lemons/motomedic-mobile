@@ -1,23 +1,48 @@
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AuthTokens } from '../types/auth';
 
 const ACCESS_TOKEN_KEY = 'motomedic-access-token';
 const REFRESH_TOKEN_KEY = 'motomedic-refresh-token';
 const EXPIRES_AT_KEY = 'motomedic-token-expires-at';
 
+const isWeb = Platform.OS === 'web';
+
+async function getItem(key: string): Promise<string | null> {
+  if (isWeb) return AsyncStorage.getItem(key);
+  return SecureStore.getItemAsync(key);
+}
+
+async function setItem(key: string, value: string): Promise<void> {
+  if (isWeb) {
+    await AsyncStorage.setItem(key, value);
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
+
+async function removeItem(key: string): Promise<void> {
+  if (isWeb) {
+    await AsyncStorage.removeItem(key);
+    return;
+  }
+  await SecureStore.deleteItemAsync(key);
+}
+
 export async function saveTokens(tokens: AuthTokens): Promise<void> {
   await Promise.all([
-    SecureStore.setItemAsync(ACCESS_TOKEN_KEY, tokens.accessToken),
-    SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokens.refreshToken),
-    SecureStore.setItemAsync(EXPIRES_AT_KEY, String(tokens.expiresAt)),
+    setItem(ACCESS_TOKEN_KEY, tokens.accessToken),
+    setItem(REFRESH_TOKEN_KEY, tokens.refreshToken),
+    setItem(EXPIRES_AT_KEY, String(tokens.expiresAt)),
   ]);
 }
 
 export async function getTokens(): Promise<AuthTokens | null> {
   const [accessToken, refreshToken, expiresAtStr] = await Promise.all([
-    SecureStore.getItemAsync(ACCESS_TOKEN_KEY),
-    SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
-    SecureStore.getItemAsync(EXPIRES_AT_KEY),
+    getItem(ACCESS_TOKEN_KEY),
+    getItem(REFRESH_TOKEN_KEY),
+    getItem(EXPIRES_AT_KEY),
   ]);
 
   if (!accessToken || !refreshToken || !expiresAtStr) {
@@ -33,13 +58,13 @@ export async function getTokens(): Promise<AuthTokens | null> {
 
 export async function clearTokens(): Promise<void> {
   await Promise.all([
-    SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY),
-    SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
-    SecureStore.deleteItemAsync(EXPIRES_AT_KEY),
+    removeItem(ACCESS_TOKEN_KEY),
+    removeItem(REFRESH_TOKEN_KEY),
+    removeItem(EXPIRES_AT_KEY),
   ]);
 }
 
-const REFRESH_BUFFER_MS = 60_000; // Refresh 60s before expiry
+const REFRESH_BUFFER_MS = 60_000;
 
 export function isTokenExpired(tokens: AuthTokens): boolean {
   return Date.now() >= tokens.expiresAt;

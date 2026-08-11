@@ -8,10 +8,12 @@ type AuthStore = {
   tokens: AuthTokens | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasBikeProfile: boolean;
   setSession: (user: AuthUser, tokens: AuthTokens) => void;
   clearSession: () => void;
   updateTokens: (tokens: AuthTokens) => void;
   setLoading: (loading: boolean) => void;
+  setHasBikeProfile: (hasBikeProfile: boolean) => void;
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -21,12 +23,14 @@ export const useAuthStore = create<AuthStore>()(
       tokens: null,
       isAuthenticated: false,
       isLoading: true,
+      hasBikeProfile: false,
       setSession: (user, tokens) =>
         set({ user, tokens, isAuthenticated: true, isLoading: false }),
       clearSession: () =>
-        set({ user: null, tokens: null, isAuthenticated: false, isLoading: false }),
+        set({ user: null, tokens: null, isAuthenticated: false, isLoading: false, hasBikeProfile: false }),
       updateTokens: (tokens) => set({ tokens }),
       setLoading: (loading) => set({ isLoading: loading }),
+      setHasBikeProfile: (hasBikeProfile) => set({ hasBikeProfile }),
     }),
     {
       name: 'auth-store',
