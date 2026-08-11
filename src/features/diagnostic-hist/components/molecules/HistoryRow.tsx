@@ -1,4 +1,5 @@
 import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { DiagnosticRecord } from '../../types/diagnostic-record';
 import { WearZoneLabel } from '../atoms/WearZoneLabel';
 
@@ -8,57 +9,69 @@ interface HistoryRowProps {
 
 export const HistoryRow: React.FC<HistoryRowProps> = ({ record }) => {
   const dateObj = new Date(record.timestamp);
-  
-  // Format matching structural layout: XX/XX/XXXX | XX:XX
-  const formattedDate = dateObj.toLocaleDateString('en-GB'); 
+  const formattedDate = dateObj.toLocaleDateString('en-GB');
   const formattedTime = dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-  
+
   const isOverdue = record.wearGauges ? record.wearGauges.serviceProgress >= 1.0 : false;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.column}>
-        {isOverdue && <div style={styles.overdueBadge}>Overdue</div>}
-        <span style={styles.text}>{`${formattedDate} | ${formattedTime}`}</span>
-      </div>
-      <div style={styles.column}>
-        <span style={styles.text}>{`${record.checkedItemIds.length} Items Checked`}</span>
-      </div>
-      <div style={styles.column}>
+    <View style={styles.container}>
+      <View style={styles.column}>
+        {isOverdue && <Text style={styles.overdueBadge}>Overdue</Text>}
+        <Text style={styles.text}>{`${formattedDate} | ${formattedTime}`}</Text>
+      </View>
+
+      <View style={styles.column}>
+        <Text style={styles.text}>{`${record.checkedItemIds.length} Items Checked`}</Text>
+      </View>
+
+      <View style={styles.column}>
         {record.wearGauges ? (
-          <WearZoneLabel progress={record.wearGauges.serviceProgress} />
+          <>
+            <WearZoneLabel progress={record.wearGauges.serviceProgress} />
+            <Text style={styles.smallText}>{`Km: ${record.wearGauges.currentKm}  Next: ${record.wearGauges.kmToNextService}  ${Math.round(record.wearGauges.serviceProgress * 100)}%`}</Text>
+          </>
         ) : (
-          <span style={{ color: '#7F8C8D' }}>N/A</span>
+          <Text style={styles.naText}>N/A</Text>
         )}
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
-    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '20px 0',
-    borderBottom: '1px solid #232D34',
-    minHeight: '65px',
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#232D34',
+    minHeight: 65,
   },
   column: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     justifyContent: 'center',
+    paddingHorizontal: 6,
   },
   overdueBadge: {
     color: '#FF3B30',
-    fontSize: '11px',
-    fontWeight: 'bold' as const,
-    textTransform: 'uppercase' as const,
-    marginBottom: '2px',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase' as any,
+    marginBottom: 2,
   },
   text: {
     color: '#E5E9EB',
-    fontSize: '15px',
+    fontSize: 15,
   },
-};
+  smallText: {
+    color: '#B0BFC6',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  naText: {
+    color: '#7F8C8D',
+  },
+});
