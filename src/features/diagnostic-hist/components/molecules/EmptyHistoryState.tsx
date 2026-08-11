@@ -1,27 +1,27 @@
 import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 export const EmptyHistoryState: React.FC = () => {
   return (
-    <div style={styles.container}>
-      <h3 style={styles.title}>No records found</h3>
-    </div>
+    <View style={styles.container}>
+      <Text style={styles.title}>No records found</Text>
+    </View>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
-    display: 'flex',
-    flexDirection: 'column' as const,
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '80px 20px',
-    textAlign: 'center' as const,
+    paddingVertical: 80,
+    paddingHorizontal: 20,
   },
   title: {
     color: '#4F5E66',
-    fontSize: '22px',
-    fontWeight: '600' as const,
-    marginTop: '20px',
-    letterSpacing: '0.5px',
+    fontSize: 22,
+    fontWeight: '600',
+    marginTop: 20,
+    letterSpacing: 0.5,
   },
-};
+});
